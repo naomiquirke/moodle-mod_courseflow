@@ -1,0 +1,59 @@
+.path-mod-courseflow .flowdisplay {
+    width: 100%;
+    min-height: 20%;
+    margin: 0px;
+    padding: 10px;
+}
+
+.path-mod-courseflow .flowstep {
+    margin: 0;
+    padding: 5px;
+}
+
+.path-mod-courseflow .stepname {
+    display: inline-block;
+    width: 30%;
+    margin: 5px 10px;
+    background-color: #def2f8;
+    padding: 5px;
+}
+
+.path-mod-courseflow .parentselector {
+    width: 30%;
+    margin: 0px 10px;
+}
+
+.path-mod-courseflow.cf-container {
+    width: 100%;
+    position: relative;
+}
+
+.path-mod-courseflow canvas {
+    position: absolute;
+}
+
+.path-mod-courseflow div[class^=cf-hex-mid] {
+    overflow: hidden;
+    padding: 5px;
+}
+
+.path-mod-courseflow div.cf-txtholder {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.path-mod-courseflow div[class^=cf-hex-].cf-notavail {
+    cursor: none;
+}
+
+.path-mod-courseflow p[id^=cf-hex-txt-].cf-hex-txt {
+    margin: auto !important;
+    text-align: center !important;
+}
+
+@media (max-width: 400px) {
+    .path-mod-courseflow p[id^=cf-hex-txt-].cf-hex-txt {
+        line-height: 1rem;
+    }
+}

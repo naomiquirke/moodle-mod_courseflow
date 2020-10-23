@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/courseflow/db" VERSION="2020022100" COMMENT="XMLDB file for Moodle mod/courseflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="courseflow" COMMENT="This is the main database table for mod courseflow">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Standard Moodle primary key."/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key reference to the course."/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Courseflow name."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last modified time."/>
+        <FIELD NAME="completion" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The course completion settings on last edit."/>
+        <FIELD NAME="flow" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+
+</XMLDB>
