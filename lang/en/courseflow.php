@@ -33,6 +33,7 @@ $string['courseflow:addinstance'] = 'Add a new courseflow resource to a course p
 $string['courseflowconditions'] = 'Courseflow activity conditions';
 $string['courseflowname'] = 'Name for this Courseflow';
 $string['courseflowsetup'] = 'Courseflow activity setup';
+$string['controlsheader'] = '';
 $string['courseflowoptions'] = 'Courseflow features to include';
 $string['courseflowoptions_desc'] = 'Default  options to be set in each coursecourseflow.';
 $string['modulename'] = 'Courseflow';

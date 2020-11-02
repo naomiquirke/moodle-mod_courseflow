@@ -49,6 +49,7 @@ class mod_courseflow_activityflow extends moodleform {
         $mform->addElement('textarea', 'flow', get_string('courseflowconditions', 'courseflow'));
         $mform->setType('flow', PARAM_TEXT);
 
+        $mform->addElement('header', 'controlsheader', get_string('controlsheader', 'courseflow'));
         $activitygroup = [];
         $activitygroup[] = &$mform->createElement('select', 'activityselector', '', $activitylist);
         $activitygroup[] = &$mform->createElement('select', 'parentselector', '',
@@ -57,6 +58,4 @@ class mod_courseflow_activityflow extends moodleform {
 
         $this->add_action_buttons();
     }
-
-
 }

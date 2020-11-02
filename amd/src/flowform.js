@@ -182,6 +182,20 @@ define(['jquery'],
                             updateColour(index);
                         });
                     me.append(colourbutton);
+
+                    // Add visibility selector.
+                    var visiblitycheck = $('<input/>')
+                        .attr({
+                            type: "checkbox",
+                            id: `chk-vis-${index}`,
+                            class: "form-check-input checkboxgroup1"
+                        })
+                        .prop("checked", activityinfo[index].visible)
+                        .on("change", function () {
+                            updateVis(index);
+
+                        });
+                    me.append(visiblitycheck);
                 }
 
                 // Take off a selected activity from the flow.
@@ -213,6 +227,11 @@ define(['jquery'],
 
                 function updateColour(index) {
                     activityinfo[index].colouravail = $(`#btn-flowstepcolour-${index}`).val();
+                    outputflow();
+                }
+
+                function updateVis(index) {
+                    activityinfo[index].visibility = $(`#chk-flowstepcolour-${index}`).prop("checked");
                     outputflow();
                 }
 
