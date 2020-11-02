@@ -242,7 +242,7 @@ define(['jquery'],
                         hexdata.y2 += hexdata.shapemargin; // Placement of shape bottom y.
                         hexdata.x1 = hexdata.innersize * 2 / 7;
                         hexdata.grad = 7 / 4;
-                        hexdata.x3 = hexdata.innersize;
+                        hexdata.x3 = hexdata.innersize - 1;
                         hexdata.stackdown = hexdata.y1;
                         hexdata.innersizeY = hexdata.innersize + hexdata.shapemargin * 2;
 
@@ -280,11 +280,12 @@ define(['jquery'],
                                 buttonstate = "half";
                             } else if (activity.completion == 0) {
                                 full.light += (100 - full.light) * 0.3;
-                                full.sat = 15;
+                                full.light = Math.max(full.light, 90);
+                                full.sat = Math.min(20, full.sat * 0.8);
                                 buttonstate = "down";
                             } else { // Hidden activity.
                                 full.sat = 10;
-                                full.light = 90;
+                                full.light = 98;
                                 buttonstate = "down";
                             }
                             hexit(buttonstate, full, copy);
@@ -318,7 +319,7 @@ define(['jquery'],
                             ctx.clearRect(0, 0, flow.size.innersize, flow.size.innersizeY);
                             const buttonheight = state == "down" ? flow.size.basebtn : state == "up" ? 0 : flow.size.basebtn / 2;
                             if (copy) {
-                                ctx.setLineDash([5, 3]);
+                                ctx.setLineDash([4, 2]);
                                 ctx.strokeStyle = "black";
                             } else {
                                 ctx.setLineDash([]);
@@ -327,7 +328,7 @@ define(['jquery'],
                             }
                             ctx.lineWidth = 1;
                             ctx.beginPath();
-                            ctx.moveTo(0, flow.size.y1 + buttonheight);
+                            ctx.moveTo(1, flow.size.y1 + buttonheight);
                             ctx.lineTo(flow.size.x1, flow.size.shapemargin + buttonheight);
                             ctx.lineTo(flow.size.x2, flow.size.shapemargin + buttonheight);
                             ctx.lineTo(flow.size.x3, flow.size.y1 + buttonheight);
@@ -348,16 +349,18 @@ define(['jquery'],
                                 ctx.strokeStyle = copy ? "black" : `hsl(${shapefill.hue},${toner2}%,${toner1}%)`;
 
                                 ctx.beginPath();
-                                ctx.moveTo(0, flow.size.y1 + topbtn);
-                                ctx.lineTo(0, flow.size.y1 + botbtn);
+                                ctx.moveTo(1, flow.size.y1 + topbtn);
+                                ctx.lineTo(1, flow.size.y1 + botbtn);
                                 ctx.lineTo(flow.size.x1, flow.size.y2 + botbtn);
                                 ctx.lineTo(flow.size.x1, flow.size.y2 + topbtn);
                                 ctx.closePath();
                                 ctx.stroke();
                                 ctx.fill();
-                                ctx.fillRect( // x, y, width, height.
-                                    flow.size.x1, flow.size.y2 + topbtn,
-                                    flow.size.x2 - flow.size.x1, botbtn - topbtn);
+                                if (!copy) {
+                                    ctx.fillRect( // x, y, width, height.
+                                        flow.size.x1, flow.size.y2 + topbtn,
+                                        flow.size.x2 - flow.size.x1, botbtn - topbtn);
+                                }
                                 ctx.beginPath();
                                 ctx.moveTo(flow.size.x1, flow.size.y2 + botbtn);
                                 ctx.lineTo(flow.size.x2, flow.size.y2 + botbtn);
@@ -429,8 +432,7 @@ define(['jquery'],
                                 g = "0x" + H[3] + H[4];
                                 b = "0x" + H[5] + H[6];
                             }
-                            // Then to HSL
-                            // Make r, g, and b fractions of 1
+                            // Then to HSL. First make r, g, and b fractions of 1
                             r /= 255;
                             g /= 255;
                             b /= 255;
@@ -439,21 +441,15 @@ define(['jquery'],
                             let cmin = Math.min(r, g, b),
                                 cmax = Math.max(r, g, b),
                                 delta = cmax - cmin,
-                                h = 0,
-                                s = 0,
-                                l = 0;
+                                h = 0, s = 0, l = 0;
                             // Calculate hue
-                            // No difference
-                            if (delta == 0) {
+                            if (delta == 0) {// No difference
                                 h = 0;
-                            } else if (cmax == r) {
-                                // Red is max
+                            } else if (cmax == r) {// Red is max
                                 h = ((g - b) / delta) % 6;
-                            } else if (cmax == g) {
-                                // Green is max
+                            } else if (cmax == g) {// Green is max
                                 h = (b - r) / delta + 2;
-                            } else {
-                                // Blue is max
+                            } else {// Blue is max
                                 h = (r - g) / delta + 4;
                             }
                             h = Math.round(h * 60);
@@ -473,7 +469,6 @@ define(['jquery'],
                             l = +(l * 100).toFixed(1);
 
                             return { "hue": h, "sat": s, "light": l };
-                            // return "hsl(" + h + "," + s + "%," + l + "%)";
                         }
                     }
                 }
