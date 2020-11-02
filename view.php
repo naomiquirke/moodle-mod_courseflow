@@ -37,8 +37,53 @@ $title = get_string('modulename', 'courseflow');
 $PAGE->set_title($title);
 
 global $DB;
+$adminconfig = get_config('mod_courseflow');
+
+// Create mods info array.
+$mi = get_fast_modinfo($course);
+$cms = array_filter($mi->get_cms(),
+    function ($cminfo) {
+        return ($cminfo->completion >= 0)
+        // Note issue with making "accessible but not on course page" with manual completion.
+            && ($cminfo->deletioninprogress == false);
+    }
+);
+
 $flowsaved = $DB->get_record('courseflow', ['id' => $cm->instance]);
-$flowform = new mod_courseflow_activityflow($url, ['thisflow' => $flowsaved]);
+$flowsteps = json_decode($flowsaved->flow, true); // True option converts to associative array.
+$activitylist = ["0" => get_string('selectactivity', 'courseflow')];
+$cminfo = [];
+foreach ($cms as $cm) {
+    if (!is_null($flowsteps) && array_key_exists("$cm->id", $flowsteps)) {
+        // Then it already exists in flow.
+        $thisparent = $flowsteps["$cm->id"]["parentid"];
+        $cminfo[$cm->id] = $flowsteps["$cm->id"];
+        $cminfo[$cm->id]["name"] = $cm->name; // In case it has changed name.
+        if (!isset($cms[$thisparent])) {
+            // Parent has been deleted. Set to no parent.
+            $cminfo[$cm->id]["parentid"] = 0;
+        }
+        $activitylist[$cm->id] = $cm->name;
+    } else {
+        $activitylist[$cm->id] = $cm->name;
+        $cminfo[$cm->id] = [
+            'id' => $cm->id,
+            'name' => $cm->name,
+            'link' => $cm->url->out(),
+            'parentid' => '0',
+            'preferred' => 0,
+            'colouravail' => $adminconfig->avail_colour,
+            'visible' => $cm->visible,
+            'visiblepage' => $cm->visibleoncoursepage,
+            'open' => ($cm->groupingid == 0 && $cm->availability == null) ? 1 : 0,
+            'tracking' => $cm->completion,
+            'sectionnum' => $cm->sectionnum,
+            'sectionvisible' => $mi->get_section_info($cm->sectionnum)->visible];
+    }
+}
+$errormessage = count($cminfo) == 0 ? get_string('alertnocompletion', 'courseflow') : null;
+$activityinfo = json_encode([$cminfo, $errormessage]);
+$flowform = new mod_courseflow_activityflow($url, $activitylist);
 
 if ($flowform->is_cancelled()) {
     redirect(new moodle_url('/course/view.php', array('id' => $course->id), "module-".$cmid ));
@@ -50,7 +95,7 @@ if ($flowform->is_cancelled()) {
 } else {
     $formrenderer = $PAGE->get_renderer('mod_courseflow');
     $formrenderer->render_form_header();
-    $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$flowform->activityinfo]);
+    $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$activityinfo]);
     $flowform->display();
     $formrenderer->render_form_footer();
 }
