@@ -95,6 +95,15 @@ if ($flowform->is_cancelled()) {
 } else {
     $formrenderer = $PAGE->get_renderer('mod_courseflow');
     $formrenderer->render_form_header();
+    $PAGE->requires->strings_for_js([
+        'flowformaccessibility',
+        'flowformactivity',
+        'flowformalert',
+        'flowformcolour',
+        'flowformmove',
+        'flowformprereq',
+        'flowformsection',
+        'flowformvisible'], 'courseflow', null);
     $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$activityinfo]);
     $flowform->display();
     $formrenderer->render_form_footer();

@@ -44,17 +44,16 @@ class mod_courseflow_activityflow extends moodleform {
         $mform = $this->_form;
         $activitylist = $this->_customdata;
 
-        $mform->addElement('header', 'conditionsheader', get_string('courseflowsetup', 'courseflow'));
+        $mform->addElement('header', 'conditionsheader', get_string('courseflowconditions', 'courseflow'));
 
-        $mform->addElement('textarea', 'flow', get_string('courseflowconditions', 'courseflow'));
+        $mform->addElement('textarea', 'flow', '');
         $mform->setType('flow', PARAM_TEXT);
 
-        $mform->addElement('header', 'controlsheader', get_string('controlsheader', 'courseflow'));
         $activitygroup = [];
         $activitygroup[] = &$mform->createElement('select', 'activityselector', '', $activitylist);
         $activitygroup[] = &$mform->createElement('select', 'parentselector', '',
             ["0" => get_string('selectparent', 'courseflow')]);
-        $mform->addGroup($activitygroup, 'activitygroup', get_string('courseflowsetup', 'courseflow'), ' ', false);
+        $mform->addGroup($activitygroup, 'activitygroup', '', ' ', false);
 
         $this->add_action_buttons();
     }

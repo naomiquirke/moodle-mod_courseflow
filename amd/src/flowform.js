@@ -35,7 +35,7 @@ define(['jquery'],
             init: function (flowInfo) {
                 // Set up display and get information about activities and current flows.
                 var flowlabel = $("#id_flow");
-                flowlabel.after('<div class="flowdisplay" id="flowdisplay"></div>');
+                $(flowlabel.parent()).before('<div class="flowdisplay" id="flowdisplay"></div>');
                 flowlabel.hide();
                 var data = JSON.parse(flowInfo);
                 var activityinfo = data[0];
@@ -44,12 +44,19 @@ define(['jquery'],
                 var parentselector = $("#id_parentselector");
                 parentselector.attr("class", "parentselector custom-select");
                 parentselector.hide();
+
                 const activityselector = $("#id_activityselector");
+
+                // Do check to see if there are prepared activities ready.  Do after prev so it looks tidy.
                 if (data[1]) {
                     $("#flowdisplay").text(data[1]).addClass("cf-teachermessage");
                     activityselector.hide();
                     return;
                 }
+
+                // Move activity selector.
+                $("#flowdisplay").after(activityselector);
+                activityselector.addClass("activityselector");
 
                 // Tidy up preferreds and set up display lines.
                 let a = Object.keys(activityinfo).sort((a, b) => (activityinfo[a].preferred - activityinfo[b].preferred));
@@ -112,15 +119,28 @@ define(['jquery'],
                     ));
                 }
 
-                // Add a line on to the flow display containing name, the remove, colour, reorder, buttons, and parent selector.
+                // Add a line on to the flow display.
                 // Updating parent selectors.
                 function addline(index, value) {
+                    // First check if this is the first, if so then need to add column titles.
+                    if (activityinfo[index].preferred == 1) {
+                        $("#flowdisplay").prepend(`<div id="headerwrap"></div>`);
+                        $("#headerwrap").append(
+                            `<div class="activitywrap">${M.str.courseflow.flowformactivity}</div>`,
+                            `<div class="btnset">${M.str.courseflow.flowformmove}</div>`,
+                            `<div class="activitywrap">${M.str.courseflow.flowformprereq}</div>`,
+                            `<div class="checkboxinfo">${M.str.courseflow.flowformvisible}</div>`,
+                            `<div class="checkboxinfo">${M.str.courseflow.flowformsection}</div>`,
+                            `<div class="checkboxinfo">${M.str.courseflow.flowformcolour}</div>`,
+                            `<hr>`
+                        );
+                    }
                     // Now add the new line
                     $(`<div class="flowstep" id="flowstep-${index}">`).appendTo("#flowdisplay");
                     var me = $(`#flowstep-${index}`);
                     me.append(`<div class="stepname">${value}</div>`);
 
-                    var removebutton = $('<input/>')
+                    const removebutton = $('<input/>')
                         .attr({
                             type: "button",
                             class: "btn-flowstep-remove btn-secondary",
@@ -129,11 +149,8 @@ define(['jquery'],
                         })
                         .on("click", function () {
                             removestep(index);
-                        })
-                        ;
-                    me.append(removebutton);
-
-                    var upbutton = $('<input/>')
+                        });
+                    const upbutton = $('<input/>')
                         .attr({
                             type: "button",
                             class: "btn-flowstep-up btn-secondary",
@@ -142,11 +159,8 @@ define(['jquery'],
                         })
                         .on("click", function () {
                             movestep(index, "up");
-                        })
-                        ;
-                    me.append(upbutton);
-
-                    var downbutton = $('<input/>')
+                        });
+                    const downbutton = $('<input/>')
                         .attr({
                             type: "button",
                             class: "btn-flowstep-down btn-secondary",
@@ -155,12 +169,13 @@ define(['jquery'],
                         })
                         .on("click", function () {
                             movestep(index, "down");
-                        })
-                        ;
-                    me.append(downbutton);
+                        });
+                    me.append(`<div class="btnset" id="wrap-btn-${index}"></div>`);
+                    $(`#wrap-btn-${index}`).append(' ', removebutton, ' ', upbutton, downbutton);
 
                     // Add parent selector.
-                    parentselector.clone().appendTo(me)
+                    me.append(`<div class="activitywrap" id="wrap-parent-${index}"></div>`);
+                    parentselector.clone().appendTo($(`#wrap-parent-${index}`))
                         .attr({
                             id: `sel-flowstep-${index}`,
                         })
@@ -170,32 +185,48 @@ define(['jquery'],
                         })
                         .show();
 
+                    // Add visibility selector.
+                    let chkvis = activityinfo[index].visible == 1 ? `<input type="checkbox" checked/>` : `<input type="checkbox"/>`;
+                    let visiblitycheck = $(chkvis)
+                        .attr({
+                            name: `chk-vis-${index}`,
+                            id: `chk-vis-${index}`,
+                            class: "checkboxgroup1", //form-check-input
+                        })
+                        .on("click", function () {
+                            activityinfo[index].visible = $(`#chk-vis-${index}`).prop("checked") ? 1 : 0;
+                            outputflow();
+                        });
+                    const wrapvis = $(`<div class="checkboxinfo" id="wrap-vis-${index}"></div>`);
+                    me.append(wrapvis);
+                    wrapvis.append(visiblitycheck);
+
+                    // Add section number & visibility.
+                    const section = $(`<div> ${activityinfo[index].sectionnum} </div>`)
+                        .attr({
+                            class: "checkboxinfo",
+                            id: `#wrap-secvis-${index}`
+                        });
+                    me.append(section);
+                    const secchk = activityinfo[index].sectionvisible == 1 ? `<input type="checkbox" checked disabled/>`
+                        : `<input type="checkbox" disabled/>`;
+                    section.append(secchk);
+
                     // Add colour selector.
-                    var colourbutton = $('<input/>')
+                    const wrapcol = $(`<div class="checkboxinfo" id="wrap-col-${index}"></div>`);
+                    const colourbutton = $('<input/>')
                         .attr({
                             type: "color",
-                            class: "btn-flowstepcolour btn-secondary",
+                            class: "btn-flowstepcolour",
                             id: `btn-flowstepcolour-${index}`,
                         })
                         .val(activityinfo[index].colouravail)
                         .on("change", function () {
-                            updateColour(index);
+                            activityinfo[index].colouravail = $(`#btn-flowstepcolour-${index}`).val();
+                            outputflow();
                         });
-                    me.append(colourbutton);
-
-                    // Add visibility selector.
-                    var visiblitycheck = $('<input/>')
-                        .attr({
-                            type: "checkbox",
-                            id: `chk-vis-${index}`,
-                            class: "form-check-input checkboxgroup1"
-                        })
-                        .prop("checked", activityinfo[index].visible)
-                        .on("change", function () {
-                            updateVis(index);
-
-                        });
-                    me.append(visiblitycheck);
+                    me.append(wrapcol);
+                    wrapcol.append(colourbutton);
                 }
 
                 // Take off a selected activity from the flow.
@@ -222,16 +253,6 @@ define(['jquery'],
                     // Put the activity selector pointer back to 0.
                     activityselector.prop('selectedIndex', 0);
                     // Update Flow and tidy.
-                    outputflow();
-                }
-
-                function updateColour(index) {
-                    activityinfo[index].colouravail = $(`#btn-flowstepcolour-${index}`).val();
-                    outputflow();
-                }
-
-                function updateVis(index) {
-                    activityinfo[index].visibility = $(`#chk-flowstepcolour-${index}`).prop("checked");
                     outputflow();
                 }
 
