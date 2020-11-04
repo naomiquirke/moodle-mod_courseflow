@@ -37,8 +37,7 @@ define(['jquery'],
                 var flowlabel = $("#id_flow");
                 $(flowlabel.parent()).before('<div class="flowdisplay" id="flowdisplay"></div>');
                 flowlabel.hide();
-                var data = JSON.parse(flowInfo);
-                var activityinfo = data[0];
+                var activityinfo = JSON.parse(flowInfo);
 
                 //Set up parent selectors
                 var parentselector = $("#id_parentselector");
@@ -48,8 +47,8 @@ define(['jquery'],
                 const activityselector = $("#id_activityselector");
 
                 // Do check to see if there are prepared activities ready.  Do after prev so it looks tidy.
-                if (data[1]) {
-                    $("#flowdisplay").text(data[1]).addClass("cf-teachermessage");
+                if ($.isEmptyObject(activityinfo)) {
+                    $("#flowdisplay").text(M.str.courseflow.flowformalert).addClass("cf-teachermessage");
                     activityselector.hide();
                     return;
                 }
@@ -132,6 +131,7 @@ define(['jquery'],
                             `<div class="checkboxinfo">${M.str.courseflow.flowformvisible}</div>`,
                             `<div class="checkboxinfo">${M.str.courseflow.flowformsection}</div>`,
                             `<div class="checkboxinfo">${M.str.courseflow.flowformcolour}</div>`,
+                            `<div class="checkboxinfo">${M.str.courseflow.flowformaccessibility}</div>`,
                             `<hr>`
                         );
                     }
@@ -174,8 +174,9 @@ define(['jquery'],
                     $(`#wrap-btn-${index}`).append(' ', removebutton, ' ', upbutton, downbutton);
 
                     // Add parent selector.
-                    me.append(`<div class="activitywrap" id="wrap-parent-${index}"></div>`);
-                    parentselector.clone().appendTo($(`#wrap-parent-${index}`))
+                    const wrappar = $(`<div class="activitywrap" id="wrap-parent-${index}"></div>`);
+                    me.append(wrappar);
+                    parentselector.clone().appendTo(wrappar)
                         .attr({
                             id: `sel-flowstep-${index}`,
                         })
@@ -227,6 +228,12 @@ define(['jquery'],
                         });
                     me.append(wrapcol);
                     wrapcol.append(colourbutton);
+
+                    // Add availability info.
+                    let avail = activityinfo[index].open == 1 ? `<input type="checkbox" checked disabled/>`
+                        : `<input type="checkbox" disabled/>`;
+                    avail = `<div class="checkboxinfo" id="info-avail-${index}" >` + avail + `</div >`;
+                    me.append(avail);
                 }
 
                 // Take off a selected activity from the flow.

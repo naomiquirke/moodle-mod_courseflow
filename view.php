@@ -81,8 +81,7 @@ foreach ($cms as $cm) {
             'sectionvisible' => $mi->get_section_info($cm->sectionnum)->visible];
     }
 }
-$errormessage = count($cminfo) == 0 ? get_string('alertnocompletion', 'courseflow') : null;
-$activityinfo = json_encode([$cminfo, $errormessage]);
+$activityinfo = json_encode($cminfo);
 $flowform = new mod_courseflow_activityflow($url, $activitylist);
 
 if ($flowform->is_cancelled()) {
