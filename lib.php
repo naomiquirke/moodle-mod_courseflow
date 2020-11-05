@@ -74,7 +74,6 @@ function courseflow_add_instance(stdClass $data) {
     }
     return $DB->insert_record('courseflow', $data);
 };
-//    error_log("\r\n***********" . date("d/m/y") . "\r\n" . print_r($COURSE, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
 
 /**
  * Updates courseflow instance

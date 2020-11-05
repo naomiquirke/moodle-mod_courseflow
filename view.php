@@ -82,6 +82,35 @@ if ($flowform->is_cancelled()) {
 } else if (($fromform = $flowform->get_data())) {
     $flowsaved->flow = $fromform->flow;
     $DB->update_record('courseflow', $flowsaved);
+
+    // Now update visibility in course module record.
+    $flowdata = json_decode($fromform->flow);
+    if (is_object($flowdata)) {
+        // Get refreshed cache in case something has changed while working on form, but use own structure.
+        $newcminfo = get_fast_modinfo($course);
+        foreach ($flowdata as $activity) {
+            $id = $activity->id;
+            $newcm = $newcminfo->cms;
+            if (has_capability('moodle/course:activityvisibility', context_module::instance($id))
+                && array_key_exists($id, $newcm)) { // Not been deleted.
+                $cmvisible = $newcm[$id]->visible;
+                if ($activity->visible != $cmvisible) {
+                    $cmsection = $newcm[$id]->sectionnum;
+                    $cmsectionvisible = $newcminfo->get_section_info($cmsection)->visible;
+                    // Update course modules table.
+                    $cmdata = ['id' => $id,
+                        'timemodified' => time(),
+                        'visible' => $activity->visible,
+                        'visibleoncoursepage' => $activity->visible];
+                    if ($cmsectionvisible) {
+                        $cmdata['visibleold'] = $activity->visible;
+                    }
+                    $DB->update_record('course_modules', $cmdata);
+                }
+            }
+        }
+    }
+//        error_log("\r\n" . time() . "******Cmdata*****" . "\r\n" . print_r($cmdata, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
     rebuild_course_cache($course->id, true);
     redirect(new moodle_url('/course/view.php', array('id' => $course->id), "module-".$cmid));
 } else {
