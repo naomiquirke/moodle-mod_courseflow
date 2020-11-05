@@ -43,7 +43,7 @@ $adminconfig = get_config('mod_courseflow');
 $mi = get_fast_modinfo($course);
 $cms = array_filter($mi->get_cms(),
     function ($cminfo) {
-        return ($cminfo->completion >= 0)
+        return ($cminfo->completion > 0)
         // Note issue with making "accessible but not on course page" with manual completion.
             && ($cminfo->deletioninprogress == false);
     }

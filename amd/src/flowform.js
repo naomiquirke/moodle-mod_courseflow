@@ -230,7 +230,7 @@ define(['jquery'],
                     wrapcol.append(colourbutton);
 
                     // Add availability info.
-                    let avail = activityinfo[index].open == 1 ? `<input type="checkbox" checked disabled/>`
+                    let avail = activityinfo[index].open != 1 ? `<input type="checkbox" checked disabled/>`
                         : `<input type="checkbox" disabled/>`;
                     avail = `<div class="checkboxinfo" id="info-avail-${index}" >` + avail + `</div >`;
                     me.append(avail);
