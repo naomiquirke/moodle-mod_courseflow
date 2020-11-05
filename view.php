@@ -54,32 +54,25 @@ $flowsteps = json_decode($flowsaved->flow, true); // True option converts to ass
 $activitylist = ["0" => get_string('selectactivity', 'courseflow')];
 $cminfo = [];
 foreach ($cms as $cm) {
+    $activitylist[$cm->id] = $cm->name;
+    $inflow = 0;
     if (!is_null($flowsteps) && array_key_exists("$cm->id", $flowsteps)) {
-        // Then it already exists in flow.
-        $thisparent = $flowsteps["$cm->id"]["parentid"];
-        $cminfo[$cm->id] = $flowsteps["$cm->id"];
-        $cminfo[$cm->id]["name"] = $cm->name; // In case it has changed name.
-        if (!isset($cms[$thisparent])) {
-            // Parent has been deleted. Set to no parent.
-            $cminfo[$cm->id]["parentid"] = 0;
-        }
-        $activitylist[$cm->id] = $cm->name;
-    } else {
-        $activitylist[$cm->id] = $cm->name;
-        $cminfo[$cm->id] = [
-            'id' => $cm->id,
-            'name' => $cm->name,
-            'link' => $cm->url->out(),
-            'parentid' => '0',
-            'preferred' => 0,
-            'colouravail' => $adminconfig->avail_colour,
-            'visible' => $cm->visible,
-            'visiblepage' => $cm->visibleoncoursepage,
-            'open' => ($cm->groupingid == 0 && $cm->availability == null) ? 1 : 0,
-            'tracking' => $cm->completion,
-            'sectionnum' => $cm->sectionnum,
-            'sectionvisible' => $mi->get_section_info($cm->sectionnum)->visible];
+        $inflow = 1; // Then it already exists in flow.
     }
+    $cminfo[$cm->id] = [
+        'id' => $cm->id,
+        'name' => $cm->name,
+        'link' => $cm->url->out(),
+        // Check that parent has not been deleted.
+        'parentid' => $inflow ? (isset($cms[$flowsteps["$cm->id"]["parentid"]]) ? $flowsteps["$cm->id"]["parentid"] : 0) : 0,
+        'preferred' => $inflow ? $flowsteps["$cm->id"]["preferred"] : 0,
+        'colouravail' => $inflow ? $flowsteps["$cm->id"]["colouravail"] : $adminconfig->avail_colour,
+        'visible' => $cm->visible,
+        'visiblepage' => $cm->visibleoncoursepage,
+        'open' => ($cm->groupingid == 0 && $cm->availability == null) ? 1 : 0,
+        'tracking' => $cm->completion,
+        'sectionnum' => $cm->sectionnum,
+        'sectionvisible' => $mi->get_section_info($cm->sectionnum)->visible];
 }
 $activityinfo = json_encode($cminfo);
 $flowform = new mod_courseflow_activityflow($url, $activitylist);
