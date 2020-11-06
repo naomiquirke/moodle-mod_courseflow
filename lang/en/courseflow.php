@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['activityoptions'] = 'Activities to include';
-$string['activityoptions_desc'] = 'Activities to include in courseflow, if present in course';
 $string['avail_colour'] = '#03962A';
 $string['avail_colour_descr'] = 'Step colour when activity available to students and uncompleted.';
 $string['avail_colour_title'] = 'Step available colour';
@@ -52,15 +50,5 @@ $string['noteoncompletion'] = 'This module will ensure activity completion is av
 $string['pluginadministration'] = 'Plugin administration'; // Required by Moodle.
 $string['pluginname'] = 'Courseflow';
 $string['return'] = 'Return to course';
-$string['restricted'] = 'Restricted by availability or grouping.';
-$string['restrictedoff'] = 'No restriction.';
-$string['sectionopen'] = 'Section {$a}, Visible.';
-$string['sectionclosed'] = 'Section {$a}, Hidden.';
 $string['selectparent'] = 'No prerequisite set';
 $string['selectactivity'] = 'Select activity... ';
-$string['setnotvisible'] = 'Conceal activities';
-$string['setvisibilitytitle'] = 'Set visibility of activities';
-$string['setvisibility'] = 'Visible';
-$string['setvisibilitypage'] = 'Accessible in hidden section';
-$string['setvisibilityall'] = 'Visibility toggle all';
-$string['setvisibilitypageall'] = 'Accessibilty in hidden section toggle all';

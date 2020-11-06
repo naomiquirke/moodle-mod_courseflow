@@ -100,27 +100,6 @@ function courseflow_delete_instance($id) {
     return $DB->delete_records('courseflow', array('id' => $id));
 };
 
-
-/**
- * Adds courseflow specific settings to the courseflow settings.
- * However is there access to admin settings?
- *
- * @param settings_navigation $settingsnav The settings navigation object
- * @param navigation_node $courseflownode The node to add module settings to
- * @return void
- */
-function courseflow_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $courseflownode) {
-    global $PAGE, $CFG;
-
-    // Link to set selected activities as not visible on course page.
-    if (has_capability('mod/courseflow:addinstance', $PAGE->cm->context)) {
-        $courseflownode ->add(get_string('setnotvisible', 'courseflow'),
-                new moodle_url($CFG->wwwroot . '/mod/courseflow/setnotvisible.php', array('id' => $PAGE->cm->id)));
-    }
-}
-
-// If necessary can insert here courseflow_get_coursemodule_info($cm).
-
 /**
  * Update for user-specific views, depending on completions for students and parentid rules.
  * Simply applies appropriate class to each shape.
