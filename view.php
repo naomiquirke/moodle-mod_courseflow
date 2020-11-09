@@ -36,7 +36,7 @@ $PAGE->set_url($url);
 $title = get_string('modulename', 'courseflow');
 $PAGE->set_title($title);
 
-global $DB;
+global $DB, $CFG;
 $adminconfig = get_config('mod_courseflow');
 
 // Create mods info array.
@@ -53,12 +53,14 @@ $flowsaved = $DB->get_record('courseflow', ['id' => $cm->instance]);
 $flowsteps = json_decode($flowsaved->flow, true); // True option converts to associative array.
 $activitylist = ["0" => get_string('selectactivity', 'courseflow')];
 $cminfo = [];
+$allowstealth = !empty($CFG->allowstealth);
 foreach ($cms as $cm) {
     $activitylist[$cm->id] = $cm->name;
     $inflow = 0;
     if (!is_null($flowsteps) && array_key_exists("$cm->id", $flowsteps)) {
         $inflow = 1; // Then it already exists in flow.
     }
+    $sectionvisible = $mi->get_section_info($cm->sectionnum)->visible;
     $cminfo[$cm->id] = [
         'id' => $cm->id,
         'name' => $cm->name,
@@ -67,13 +69,16 @@ foreach ($cms as $cm) {
         'parentid' => $inflow ? (isset($cms[$flowsteps["$cm->id"]["parentid"]]) ? $flowsteps["$cm->id"]["parentid"] : 0) : 0,
         'preferred' => $inflow ? $flowsteps["$cm->id"]["preferred"] : 0,
         'colouravail' => $inflow ? $flowsteps["$cm->id"]["colouravail"] : $adminconfig->avail_colour,
-        'visible' => $cm->visible,
-        'visiblepage' => $cm->visibleoncoursepage,
+        'visiblepage' => $sectionvisible ? ($cm->visible ? $cm->visibleoncoursepage : 0) : 0,
+        'accessible' => $cm->visible,
         'open' => ($cm->groupingid == 0 && $cm->availability == null) ? 1 : 0,
         'tracking' => $cm->completion,
+        'availinfo' => $mi->get_cm($cm->id)->availableinfo,
         'sectionnum' => $cm->sectionnum,
-        'sectionvisible' => $mi->get_section_info($cm->sectionnum)->visible];
+        'sectionvisible' => $sectionvisible
+        ];
 }
+//error_log("\r\n" . time() . "******cminfo*****" . "\r\n" . print_r($cminfo, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
 $activityinfo = json_encode($cminfo);
 $flowform = new mod_courseflow_activityflow($url, $activitylist);
 
@@ -94,37 +99,51 @@ if ($flowform->is_cancelled()) {
             if (has_capability('moodle/course:activityvisibility', context_module::instance($id))
                 && array_key_exists($id, $newcm)) { // Not been deleted.
                 $cmvisible = $newcm[$id]->visible;
-                if ($activity->visible != $cmvisible) {
+                if (($activity->accessible != $newcm[$id]->visible) ||
+                    ($activity->visiblepage != $newcm[$id]->visibleoncoursepage)) {
                     $cmsection = $newcm[$id]->sectionnum;
-                    $cmsectionvisible = $newcminfo->get_section_info($cmsection)->visible;
+                    $newsectionvisible = $newcminfo->get_section_info($cmsection)->visible;
                     // Update course modules table.
                     $cmdata = ['id' => $id,
                         'timemodified' => time(),
-                        'visible' => $activity->visible,
-                        'visibleoncoursepage' => $activity->visible];
-                    if ($cmsectionvisible) {
-                        $cmdata['visibleold'] = $activity->visible;
+                        'visible' => $activity->accessible];
+                    if ($allowstealth) {
+                        $cmdata['visibleoncoursepage'] = $activity->visiblepage;
+                    } else {
+                        $cmdata['visibleoncoursepage'] = 1;
+                    }
+                    if ($newsectionvisible) {
+                        $cmdata['visibleold'] = $activity->accessible;
                     }
                     $DB->update_record('course_modules', $cmdata);
                 }
             }
         }
     }
-//        error_log("\r\n" . time() . "******Cmdata*****" . "\r\n" . print_r($cmdata, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
     rebuild_course_cache($course->id, true);
     redirect(new moodle_url('/course/view.php', array('id' => $course->id), "module-".$cmid));
 } else {
     $formrenderer = $PAGE->get_renderer('mod_courseflow');
     $formrenderer->render_form_header();
     $PAGE->requires->strings_for_js([
-        'flowformaccessibility',
         'flowformactivity',
+        'flowformactivityhelp',
         'flowformalert',
         'flowformcolour',
+        'flowformcolourhelp',
         'flowformmove',
+        'flowformmovehelp',
         'flowformprereq',
+        'flowformprereqhelp',
+        'flowformrestrictions',
+        'flowformrestrictionshelp',
         'flowformsection',
-        'flowformvisible'], 'courseflow', null);
+        'flowformsectionhelp',
+        'flowformvisible',
+        'flowformvisiblehelp',
+        'flowformvisiblecourse',
+        'flowformvisiblecoursehelp',
+        ], 'courseflow', null);
     $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$activityinfo]);
     $flowform->display();
     $formrenderer->render_form_footer();

@@ -128,10 +128,11 @@ define(['jquery'],
                             `<div class="activitywrap">${M.str.courseflow.flowformactivity}</div>`,
                             `<div class="btnset">${M.str.courseflow.flowformmove}</div>`,
                             `<div class="activitywrap">${M.str.courseflow.flowformprereq}</div>`,
+                            `<div class="checkboxinfo">${M.str.courseflow.flowformvisiblecourse}</div>`,
                             `<div class="checkboxinfo">${M.str.courseflow.flowformvisible}</div>`,
                             `<div class="checkboxinfo">${M.str.courseflow.flowformsection}</div>`,
                             `<div class="checkboxinfo">${M.str.courseflow.flowformcolour}</div>`,
-                            `<div class="checkboxinfo">${M.str.courseflow.flowformaccessibility}</div>`,
+                            `<div class="checkboxinfo">${M.str.courseflow.flowformrestrictions}</div>`,
                             `<hr>`
                         );
                     }
@@ -186,8 +187,12 @@ define(['jquery'],
                         })
                         .show();
 
-                    // Add visibility selector.
-                    let chkvis = activityinfo[index].visible == 1 ? `<input type="checkbox" checked/>` : `<input type="checkbox"/>`;
+                    // Add visible on page selector.
+                    // Note we are not using standard Moodle setting method for when section is not visible.
+                    // This will be 0 if accessible is 0 or sectionvisible is 0.
+                    // In PHP result will be reset to 1 even if 0 unless stealth is enabled.
+                    let chkvis = activityinfo[index].sectionvisible == 0 ? `<input type="checkbox" disabled/>` :
+                        activityinfo[index].visiblepage == 1 ? `<input type="checkbox" checked/>` : `<input type="checkbox"/>`;
                     let visiblitycheck = $(chkvis)
                         .attr({
                             name: `chk-vis-${index}`,
@@ -195,12 +200,40 @@ define(['jquery'],
                             class: "checkboxgroup1", //form-check-input
                         })
                         .on("click", function () {
-                            activityinfo[index].visible = $(`#chk-vis-${index}`).prop("checked") ? 1 : 0;
+                            activityinfo[index].visiblepage = $(`#chk-vis-${index}`).prop("checked") ? 1 : 0;
+                            if (activityinfo[index].visiblepage && !activityinfo[index].accessible) {
+                                // Set accessible to be true
+                                activityinfo[index].accessible = 1;
+                                $(`#chk-acc-${index}`).prop("checked", true);
+                            }
                             outputflow();
                         });
-                    const wrapvis = $(`<div class="checkboxinfo" id="wrap-vis-${index}"></div>`);
+                    let wrapvis = $(`<div class="checkboxinfo" id="wrap-vis-${index}"></div>`);
                     me.append(wrapvis);
                     wrapvis.append(visiblitycheck);
+
+                    // Then add accessible selector, this will be 1 if visiblepage is 1.
+                    let chkacc = activityinfo[index].accessible == 1 ? `<input type="checkbox" checked/>` :
+                        `<input type="checkbox"/>`;
+                    let acccheck = $(chkacc)
+                        .attr({
+                            name: `chk-acc-${index}`,
+                            id: `chk-acc-${index}`,
+                            class: "checkboxgroup2", //form-check-input
+                        })
+                        .on("click", function () {
+                            activityinfo[index].accessible = $(`#chk-acc-${index}`).prop("checked") ? 1 : 0;
+                            if (!activityinfo[index].accessible) {
+                                // Set visibility on page to be false.  This setting has different mechanism from Moodle visibility.
+                                activityinfo[index].visiblepage = 0;
+                                $(`#chk-vis-${index}`).prop("checked", false);
+                            }
+                            outputflow();
+                        });
+                    wrapvis = $(`<div class="checkboxinfo" id="wrap-acc-${index}"></div>`);
+                    me.append(wrapvis);
+                    wrapvis.append(acccheck);
+
 
                     // Add section number & visibility.
                     const section = $(`<div> ${activityinfo[index].sectionnum} </div>`)
@@ -230,9 +263,9 @@ define(['jquery'],
                     wrapcol.append(colourbutton);
 
                     // Add availability info.
-                    let avail = activityinfo[index].open != 1 ? `<input type="checkbox" checked disabled/>`
-                        : `<input type="checkbox" disabled/>`;
-                    avail = `<div class="checkboxinfo" id="info-avail-${index}" >` + avail + `</div >`;
+                    let avail = `<div class="checkboxinfo" id="info-avail-${index}"><input type="checkbox" ` +
+                        (activityinfo[index].open != 1 ? "checked" : "") +
+                        ` disabled /> ${activityinfo[index].availinfo}</div>`;
                     me.append(avail);
                 }
 
