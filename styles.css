@@ -37,6 +37,11 @@
     width: 100%;
 }
 
+.path-mod-courseflow .headerhelp {
+    text-decoration-style: dotted;
+    cursor: help;
+}
+
 .path-mod-courseflow .checkboxinfo {
     display: inline-block;
     width: 5%;

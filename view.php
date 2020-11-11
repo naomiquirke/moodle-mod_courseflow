@@ -53,7 +53,6 @@ $flowsaved = $DB->get_record('courseflow', ['id' => $cm->instance]);
 $flowsteps = json_decode($flowsaved->flow, true); // True option converts to associative array.
 $activitylist = ["0" => get_string('selectactivity', 'courseflow')];
 $cminfo = [];
-$allowstealth = !empty($CFG->allowstealth);
 foreach ($cms as $cm) {
     $activitylist[$cm->id] = $cm->name;
     $inflow = 0;
@@ -79,6 +78,7 @@ foreach ($cms as $cm) {
         ];
 }
 //error_log("\r\n" . time() . "******cminfo*****" . "\r\n" . print_r($cminfo, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
+$allowstealth = !empty($CFG->allowstealth);
 $activityinfo = json_encode($cminfo);
 $flowform = new mod_courseflow_activityflow($url, $activitylist);
 
@@ -144,7 +144,7 @@ if ($flowform->is_cancelled()) {
         'flowformvisiblecourse',
         'flowformvisiblecoursehelp',
         ], 'courseflow', null);
-    $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$activityinfo]);
+    $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$activityinfo, $allowstealth]);
     $flowform->display();
     $formrenderer->render_form_footer();
 }

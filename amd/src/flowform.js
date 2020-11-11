@@ -32,7 +32,7 @@ define(['jquery'],
          */
 
         return {
-            init: function (flowInfo) {
+            init: function (flowInfo, allowstealth) {
                 // Set up display and get information about activities and current flows.
                 var flowlabel = $("#id_flow");
                 $(flowlabel.parent()).before('<div class="flowdisplay" id="flowdisplay"></div>');
@@ -117,6 +117,13 @@ define(['jquery'],
                     }
                     ));
                 }
+                function addheader(sizestyle, name) {
+                    const headname = M.str.courseflow[name];
+                    const helpname = M.str.courseflow[name + 'help'];
+                    return $(`<div data-toggle="tooltip"
+                    title = "${helpname}"
+                    class = "${sizestyle} headerhelp">${headname}</div>`);
+                }
 
                 // Add a line on to the flow display.
                 // Updating parent selectors.
@@ -125,14 +132,14 @@ define(['jquery'],
                     if (activityinfo[index].preferred == 1) {
                         $("#flowdisplay").prepend(`<div id="headerwrap"></div>`);
                         $("#headerwrap").append(
-                            `<div class="activitywrap">${M.str.courseflow.flowformactivity}</div>`,
-                            `<div class="btnset">${M.str.courseflow.flowformmove}</div>`,
-                            `<div class="activitywrap">${M.str.courseflow.flowformprereq}</div>`,
-                            `<div class="checkboxinfo">${M.str.courseflow.flowformvisiblecourse}</div>`,
-                            `<div class="checkboxinfo">${M.str.courseflow.flowformvisible}</div>`,
-                            `<div class="checkboxinfo">${M.str.courseflow.flowformsection}</div>`,
-                            `<div class="checkboxinfo">${M.str.courseflow.flowformcolour}</div>`,
-                            `<div class="checkboxinfo">${M.str.courseflow.flowformrestrictions}</div>`,
+                            addheader('activitywrap', 'flowformactivity'),
+                            addheader('btnset', 'flowformmove'),
+                            addheader('activitywrap', 'flowformprereq'),
+                            addheader('checkboxinfo', 'flowformsection'),
+                            addheader('checkboxinfo', 'flowformvisiblecourse'),
+                            addheader('checkboxinfo', 'flowformvisible'),
+                            addheader('checkboxinfo', 'flowformcolour'),
+                            addheader('checkboxinfo', 'flowformrestrictions'),
                             `<hr>`
                         );
                     }
@@ -187,6 +194,17 @@ define(['jquery'],
                         })
                         .show();
 
+                    // Add section number & visibility.
+                    const section = $(`<div> ${activityinfo[index].sectionnum} </div>`)
+                        .attr({
+                            class: "checkboxinfo",
+                            id: `#wrap-secvis-${index}`
+                        });
+                    me.append(section);
+                    const secchk = activityinfo[index].sectionvisible == 1 ? `<input type="checkbox" checked disabled/>`
+                        : `<input type="checkbox" disabled/>`;
+                    section.append(secchk);
+
                     // Add visible on page selector.
                     // Note we are not using standard Moodle setting method for when section is not visible.
                     // This will be 0 if accessible is 0 or sectionvisible is 0.
@@ -201,10 +219,14 @@ define(['jquery'],
                         })
                         .on("click", function () {
                             activityinfo[index].visiblepage = $(`#chk-vis-${index}`).prop("checked") ? 1 : 0;
-                            if (activityinfo[index].visiblepage && !activityinfo[index].accessible) {
+                            if (activityinfo[index].visiblepage) {
                                 // Set accessible to be true
                                 activityinfo[index].accessible = 1;
                                 $(`#chk-acc-${index}`).prop("checked", true);
+                            } else if ((!allowstealth) && (activityinfo[index].sectionvisible != 0)) {
+                                // Can't have accessible but not visible on course page.
+                                activityinfo[index].accessible = 0;
+                                $(`#chk-acc-${index}`).prop("checked", false);
                             }
                             outputflow();
                         });
@@ -227,6 +249,10 @@ define(['jquery'],
                                 // Set visibility on page to be false.  This setting has different mechanism from Moodle visibility.
                                 activityinfo[index].visiblepage = 0;
                                 $(`#chk-vis-${index}`).prop("checked", false);
+                            } else if ((!allowstealth) && (activityinfo[index].sectionvisible != 0)) {
+                                // Then can't have accessible but not visible on course page.
+                                activityinfo[index].visiblepage = 1;
+                                $(`#chk-vis-${index}`).prop("checked", true);
                             }
                             outputflow();
                         });
@@ -234,17 +260,6 @@ define(['jquery'],
                     me.append(wrapvis);
                     wrapvis.append(acccheck);
 
-
-                    // Add section number & visibility.
-                    const section = $(`<div> ${activityinfo[index].sectionnum} </div>`)
-                        .attr({
-                            class: "checkboxinfo",
-                            id: `#wrap-secvis-${index}`
-                        });
-                    me.append(section);
-                    const secchk = activityinfo[index].sectionvisible == 1 ? `<input type="checkbox" checked disabled/>`
-                        : `<input type="checkbox" disabled/>`;
-                    section.append(secchk);
 
                     // Add colour selector.
                     const wrapcol = $(`<div class="checkboxinfo" id="wrap-col-${index}"></div>`);
