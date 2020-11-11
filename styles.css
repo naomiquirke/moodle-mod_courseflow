@@ -50,6 +50,15 @@
     vertical-align: middle;
 }
 
+.path-mod-courseflow .restrictedinfo {
+    display: inline-block;
+    width: 12%;
+    margin: 0 0 0 0;
+    text-align: left;
+    vertical-align: top;
+    font-size: x-small;
+}
+
 .path-mod-courseflow .btnset {
     display: inline-block;
     width: 10%;

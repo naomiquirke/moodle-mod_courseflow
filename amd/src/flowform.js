@@ -135,10 +135,10 @@ define(['jquery'],
                             addheader('activitywrap', 'flowformactivity'),
                             addheader('btnset', 'flowformmove'),
                             addheader('activitywrap', 'flowformprereq'),
+                            addheader('checkboxinfo', 'flowformcolour'),
                             addheader('checkboxinfo', 'flowformsection'),
                             addheader('checkboxinfo', 'flowformvisiblecourse'),
                             addheader('checkboxinfo', 'flowformvisible'),
-                            addheader('checkboxinfo', 'flowformcolour'),
                             addheader('checkboxinfo', 'flowformrestrictions'),
                             `<hr>`
                         );
@@ -193,6 +193,22 @@ define(['jquery'],
                             outputflow();
                         })
                         .show();
+
+                    // Add colour selector.
+                    const wrapcol = $(`<div class="checkboxinfo" id="wrap-col-${index}"></div>`);
+                    const colourbutton = $('<input/>')
+                        .attr({
+                            type: "color",
+                            class: "btn-flowstepcolour",
+                            id: `btn-flowstepcolour-${index}`,
+                        })
+                        .val(activityinfo[index].colouravail)
+                        .on("change", function () {
+                            activityinfo[index].colouravail = $(`#btn-flowstepcolour-${index}`).val();
+                            outputflow();
+                        });
+                    me.append(wrapcol);
+                    wrapcol.append(colourbutton);
 
                     // Add section number & visibility.
                     const section = $(`<div> ${activityinfo[index].sectionnum} </div>`)
@@ -260,27 +276,10 @@ define(['jquery'],
                     me.append(wrapvis);
                     wrapvis.append(acccheck);
 
-
-                    // Add colour selector.
-                    const wrapcol = $(`<div class="checkboxinfo" id="wrap-col-${index}"></div>`);
-                    const colourbutton = $('<input/>')
-                        .attr({
-                            type: "color",
-                            class: "btn-flowstepcolour",
-                            id: `btn-flowstepcolour-${index}`,
-                        })
-                        .val(activityinfo[index].colouravail)
-                        .on("change", function () {
-                            activityinfo[index].colouravail = $(`#btn-flowstepcolour-${index}`).val();
-                            outputflow();
-                        });
-                    me.append(wrapcol);
-                    wrapcol.append(colourbutton);
-
                     // Add availability info.
-                    let avail = `<div class="checkboxinfo" id="info-avail-${index}"><input type="checkbox" ` +
-                        (activityinfo[index].open != 1 ? "checked" : "") +
-                        ` disabled /> ${activityinfo[index].availinfo}</div>`;
+                    let avail = $(`<div id="info-avail-${index}"</div>`)
+                        .attr("class", activityinfo[index].open == 1 ? "checkboxinfo" : "restrictedinfo")
+                        .html(activityinfo[index].open == 1 ? "-" : activityinfo[index].availinfo);
                     me.append(avail);
                 }
 

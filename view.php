@@ -70,14 +70,19 @@ foreach ($cms as $cm) {
         'colouravail' => $inflow ? $flowsteps["$cm->id"]["colouravail"] : $adminconfig->avail_colour,
         'visiblepage' => $sectionvisible ? ($cm->visible ? $cm->visibleoncoursepage : 0) : 0,
         'accessible' => $cm->visible,
-        'open' => ($cm->groupingid == 0 && $cm->availability == null) ? 1 : 0,
+        'open' => ($cm->groupingid == 0 && $cm->availability === null) ? 1 : 0,
         'tracking' => $cm->completion,
-        'availinfo' => $mi->get_cm($cm->id)->availableinfo,
         'sectionnum' => $cm->sectionnum,
         'sectionvisible' => $sectionvisible
         ];
+    if ($cminfo[$cm->id]['open']) {
+        $cminfo[$cm->id]['availinfo'] = '';
+    } else {
+        $ci = new \core_availability\info_module($cm);
+        $cminfo[$cm->id]['availinfo'] = $ci->get_full_information();
+//        error_log("\r\n" . time() . "******fullinfo*****" . "\r\n" . print_r($fullinfo, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
+    }
 }
-//error_log("\r\n" . time() . "******cminfo*****" . "\r\n" . print_r($cminfo, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
 $allowstealth = !empty($CFG->allowstealth);
 $activityinfo = json_encode($cminfo);
 $flowform = new mod_courseflow_activityflow($url, $activitylist);
