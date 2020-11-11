@@ -44,7 +44,8 @@ $string['flowformrestrictionshelp'] = 'Whether there is restricted access to the
 $string['flowformsection'] = 'Section visible';
 $string['flowformsectionhelp'] = "Whether the activity's section is visibile on the course page";
 $string['flowformvisible'] = "Accessible";
-$string['flowformvisiblehelp'] = 'Whether the activity is accessible (visible)';
+$string['flowformvisiblehelp'] = 'Whether the activity is accessible.
+This can be different from course page visibility if stealth activities are enabled or activity is in a hidden section.';
 $string['flowformvisiblecourse'] = 'Visible in course';
 $string['flowformvisiblecoursehelp'] = 'Whether a link to the activity is shown on the course page';
 $string['modulename'] = 'Courseflow';
