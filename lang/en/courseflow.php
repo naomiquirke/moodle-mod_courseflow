@@ -28,7 +28,7 @@ $string['avail_colour_title'] = 'Step available colour';
 $string['chooseactivities'] = 'Setup activities for flow';
 $string['courseflow:addinstance'] = 'Add a new courseflow resource to a course page';
 $string['courseflowconditions'] = 'Courseflow activity conditions';
-$string['courseflowname'] = 'Name for this Courseflow';
+$string['courseflowname'] = 'Courseflow name';
 $string['flowformactivity'] = 'Activity';
 $string['flowformactivityhelp'] = 'The activity that is included as a step in the course flow';
 $string['flowformalert'] = 'It is necessary to add activities to your course that have completion enabled.';
@@ -55,11 +55,9 @@ flow diagram of activities students are expected to complete in their course. If
 it is clickable, completion status is indicated by colour. Completion order is indicated by positioning.
 The activities themselves may then be set as not visible on course page, removing all clutter.';
 $string['notapplicable'] = 'Not set';
-$string['notavail_colour'] = '#A9A9A9';
-$string['notavail_colour_title'] = 'Step hidden colour';
 $string['noteoncompletion'] = 'This module will ensure activity completion is available, if it is available on site.';
 $string['pluginadministration'] = 'Plugin administration'; // Required by Moodle.
 $string['pluginname'] = 'Courseflow';
-$string['return'] = 'Return to course';
+$string['return'] = 'Save and return to course';
 $string['selectparent'] = 'No prerequisite set';
 $string['selectactivity'] = 'Select activity... ';

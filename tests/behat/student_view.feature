@@ -1,4 +1,4 @@
-@mod @mod_courseflow
+@mod @mod_courseflowcopy
 Feature: Students can see and access courseflow steps depending on their grouping and their activity completion status
   In order for students to see and access courseflow steps appropriately
   As a teacher
@@ -8,7 +8,7 @@ Feature: Students can see and access courseflow steps depending on their groupin
 
   Background: courseflow Exists.
     Given the following "courses" exist:
-      | fullname | shortname | summary                  | category |
+      | fullname | shortname | summary                        | category |
       | Course 1 | C1        | Course with working courseflow | 0        |
     And the following "users" exist:
       | username | firstname | lastname | email                |

@@ -274,19 +274,23 @@ define(['jquery'],
                         if (!activity.deleted) {
                             if ((parentcompletion == 1) && (activity.completion == 0)) {
                                 buttonstate = "up";
+                                text.addClass("ready");
                             } else if (activity.completion == 1) {
                                 full.light += (100 - full.light) * 0.35;
                                 full.sat = full.sat * 0.75;
                                 buttonstate = "half";
+                                text.addClass("available");
                             } else if (activity.completion == 0) {
                                 full.light += (100 - full.light) * 0.3;
                                 full.light = Math.max(full.light, 90);
                                 full.sat = Math.min(20, full.sat * 0.8);
                                 buttonstate = "down";
+                                text.addClass("notavailable");
                             } else { // Hidden activity.
                                 full.sat = 10;
                                 full.light = 98;
                                 buttonstate = "down";
+                                text.addClass("notvisible");
                             }
                             hexit(buttonstate, full, copy);
                         }

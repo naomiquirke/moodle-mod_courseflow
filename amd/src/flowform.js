@@ -187,6 +187,7 @@ define(['jquery'],
                     parentselector.clone().appendTo(wrappar)
                         .attr({
                             id: `sel-flowstep-${index}`,
+                            name: `parentselector-${activityinfo[index].name}`
                         })
                         .on("click", function () {
                             activityinfo[index].parentid = $(this).val();
@@ -229,9 +230,9 @@ define(['jquery'],
                         activityinfo[index].visiblepage == 1 ? `<input type="checkbox" checked/>` : `<input type="checkbox"/>`;
                     let visiblitycheck = $(chkvis)
                         .attr({
-                            name: `chk-vis-${index}`,
                             id: `chk-vis-${index}`,
                             class: "checkboxgroup1", //form-check-input
+                            name: `chk-vis-${activityinfo[index].name}`
                         })
                         .on("click", function () {
                             activityinfo[index].visiblepage = $(`#chk-vis-${index}`).prop("checked") ? 1 : 0;
@@ -255,7 +256,7 @@ define(['jquery'],
                         `<input type="checkbox"/>`;
                     let acccheck = $(chkacc)
                         .attr({
-                            name: `chk-acc-${index}`,
+                            name: `chk-acc-${activityinfo[index].name}`,
                             id: `chk-acc-${index}`,
                             class: "checkboxgroup2", //form-check-input
                         })
