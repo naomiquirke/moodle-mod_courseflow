@@ -28,13 +28,6 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
 
-    $settings->add(new admin_setting_configcolourpicker('mod_courseflow/notavail_colour',
-        get_string('notavail_colour_title', 'mod_courseflow'),
-        get_string('notavail_colour_descr', 'mod_courseflow'),
-        get_string('notavail_colour', 'mod_courseflow'),
-        null )
-    );
-
     $settings->add(new admin_setting_configcolourpicker('mod_courseflow/avail_colour',
         get_string('avail_colour_title', 'mod_courseflow'),
         get_string('avail_colour_descr', 'mod_courseflow'),
