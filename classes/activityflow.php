@@ -42,10 +42,14 @@ class mod_courseflow_activityflow extends moodleform {
         global $CFG;
 
         $mform = $this->_form;
-        $activitylist = $this->_customdata;
+        $activitylist = $this->_customdata['activitylist'];
 
         $mform->addElement('header', 'conditionsheader', get_string('courseflowconditions', 'courseflow'));
-
+        $mform->setType('conditionsheader', PARAM_TEXT);
+        $mform->addElement('hidden', 'allowstealth', $this->_customdata['allowstealth']);
+        $mform->setType('allowstealth', PARAM_INT);
+        $mform->addElement('hidden', 'activityinfo', $this->_customdata['activityinfo']);
+        $mform->setType('activityinfo', PARAM_RAW);
         $mform->addElement('textarea', 'flow', '');
         $mform->setType('flow', PARAM_TEXT);
 

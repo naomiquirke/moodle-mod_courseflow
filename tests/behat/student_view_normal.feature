@@ -57,8 +57,9 @@ Feature: Students can access courseflow steps when available but not when not
     And I am on "Course 1" course homepage
     And I follow "Choice 1"
     And I choose "Option 1" from "Choice 1" choice activity
+    And I am on "Course 1" course homepage
 
-    Then I should see "1" occurrences of "Forum 1" in the "p.notvisible" "css_element"
-    And I should see "1" occurrences of "Quiz 1" in the "p.notavailable" "css_element"
-    And I should see "1" occurrences of "Choice 1" in the "p.available" "css_element"
-    And I should see "1" occurrences of "Assign 1" in the "p.ready" "css_element"
+    Then I should see "Quiz 1" in the ".notavailable" "css_element"
+    And I should see "Assign 1" in the ".ready" "css_element"
+    And I should see "Forum 1" in the ".notvisible" "css_element"
+    And I should see "Choice 1" in the ".available" "css_element"

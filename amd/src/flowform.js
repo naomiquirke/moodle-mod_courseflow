@@ -32,12 +32,13 @@ define(['jquery'],
          */
 
         return {
-            init: function (flowInfo, allowstealth) {
+            init: function () {
                 // Set up display and get information about activities and current flows.
                 var flowlabel = $("#id_flow");
                 $(flowlabel.parent()).before('<div class="flowdisplay" id="flowdisplay"></div>');
                 flowlabel.hide();
-                var activityinfo = JSON.parse(flowInfo);
+                var activityinfo = JSON.parse($('input[name=activityinfo]').val());
+                var allowstealth = $('input[name=allowstealth]').val();
 
                 //Set up parent selectors
                 var parentselector = $("#id_parentselector");
@@ -240,7 +241,7 @@ define(['jquery'],
                                 // Set accessible to be true
                                 activityinfo[index].accessible = 1;
                                 $(`#chk-acc-${index}`).prop("checked", true);
-                            } else if ((!allowstealth) && (activityinfo[index].sectionvisible != 0)) {
+                            } else if ((allowstealth == 0) && (activityinfo[index].sectionvisible != 0)) {
                                 // Can't have accessible but not visible on course page.
                                 activityinfo[index].accessible = 0;
                                 $(`#chk-acc-${index}`).prop("checked", false);
@@ -266,7 +267,7 @@ define(['jquery'],
                                 // Set visibility on page to be false.  This setting has different mechanism from Moodle visibility.
                                 activityinfo[index].visiblepage = 0;
                                 $(`#chk-vis-${index}`).prop("checked", false);
-                            } else if ((!allowstealth) && (activityinfo[index].sectionvisible != 0)) {
+                            } else if ((allowstealth == 0) && (activityinfo[index].sectionvisible != 0)) {
                                 // Then can't have accessible but not visible on course page.
                                 activityinfo[index].visiblepage = 1;
                                 $(`#chk-vis-${index}`).prop("checked", true);

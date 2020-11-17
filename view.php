@@ -83,9 +83,10 @@ foreach ($cms as $cm) {
 //        error_log("\r\n" . time() . "******fullinfo*****" . "\r\n" . print_r($fullinfo, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
     }
 }
-$allowstealth = !empty($CFG->allowstealth);
+$allowstealth = !empty($CFG->allowstealth) ? 1 : 0;
 $activityinfo = json_encode($cminfo);
-$flowform = new mod_courseflow_activityflow($url, $activitylist);
+$flowform = new mod_courseflow_activityflow($url, ['activitylist' => $activitylist, 'activityinfo' => $activityinfo,
+    'allowstealth' => $allowstealth]);
 
 if ($flowform->is_cancelled()) {
     redirect(new moodle_url('/course/view.php', array('id' => $course->id), "module-".$cmid ));
@@ -149,7 +150,7 @@ if ($flowform->is_cancelled()) {
         'flowformvisiblecourse',
         'flowformvisiblecoursehelp',
         ], 'courseflow', null);
-    $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', [$activityinfo, $allowstealth]);
+    $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', []);
     $flowform->display();
     $formrenderer->render_form_footer();
 }
