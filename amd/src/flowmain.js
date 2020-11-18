@@ -67,11 +67,12 @@ define(['jquery'],
 
                     // Set the size of the canvases containing the shapes.
                     $(`${flow.container} canvas.cf-inner-hex`).attr({
-                        width: flow.size.innersize + "px",
+                        width: flow.size.innersizeX + "px",
                         height: flow.size.innersizeY + "px"
                     });
                     $(`${flow.container} .cf-outer-hex`).css("position", "absolute");
-
+                    // Initialise marker for next suggested shape, only one up button can have this.
+                    var nextsuggested = 0;
                     // Draw the shapes
                     for (const c of flow.floworder) {
                         const shape = c[0];
@@ -235,16 +236,19 @@ define(['jquery'],
                         hexdata.stackright = (width - 1) / (hexdata.maxcol * 1.1);
                         hexdata.shapemargin = (hexdata.stackright) * 0.1;  // Space between shapes.
                         hexdata.basebtn = (hexdata.stackright) * 0.1; // Height of button.
-                        hexdata.x2 = hexdata.stackright - hexdata.shapemargin;
-                        hexdata.innersize = hexdata.x2 * 7 / 5;
+                        let truex2 = hexdata.stackright - hexdata.shapemargin;
+                        hexdata.innersize = truex2 * 7 / 5;
                         hexdata.y2 = hexdata.innersize - hexdata.basebtn; // Height of shape.
                         hexdata.y1 = hexdata.y2 / 2 + hexdata.shapemargin; // Placement of shape middle y.
                         hexdata.y2 += hexdata.shapemargin; // Placement of shape bottom y.
-                        hexdata.x1 = hexdata.innersize * 2 / 7;
                         hexdata.grad = 7 / 4;
-                        hexdata.x3 = hexdata.innersize - 1;
                         hexdata.stackdown = hexdata.y1;
                         hexdata.innersizeY = hexdata.innersize + hexdata.shapemargin * 2;
+                        hexdata.innersizeX = hexdata.innersize + hexdata.shapemargin * 2;
+                        hexdata.x2 = truex2 + hexdata.shapemargin;
+                        hexdata.x1 = hexdata.innersize * 2 / 7 + hexdata.shapemargin;
+                        hexdata.x0 = 1 + hexdata.shapemargin;
+                        hexdata.x3 = hexdata.innersize - 1 + hexdata.shapemargin;
 
                         $(`${flow.container} div.cf-hex-mid`).css({
                             height: hexdata.x2 + "px",
@@ -274,6 +278,7 @@ define(['jquery'],
                         if (!activity.deleted) {
                             if ((parentcompletion == 1) && (activity.completion == 0)) {
                                 buttonstate = "up";
+                                nextsuggested = nextsuggested == 0 ? 1 : 2;
                                 text.addClass("ready");
                             } else if (activity.completion == 1) {
                                 full.light += (100 - full.light) * 0.35;
@@ -292,8 +297,10 @@ define(['jquery'],
                                 buttonstate = "down";
                                 text.addClass("notvisible");
                             }
-                            hexit(buttonstate, full, copy);
+                            hexit(buttonstate, full, copy, nextsuggested);
                         }
+                        const nowsuggested = nextsuggested;
+                        nextsuggested = nextsuggested > 0 ? 2 : 0;
 
                         // Now the link & text.
                         let textcolour = copy ? "black" : (full.light < 65) ? "white" : "black";
@@ -306,10 +313,10 @@ define(['jquery'],
                                 })
                                 .on("mousedown touchstart", function (e) {
                                     e.preventDefault();
-                                    hexit("down", full, copy);
+                                    hexit("down", full, copy, nowsuggested);
                                 })
                                 .on("mouseleave touchend mouseup", function () {
-                                    hexit(buttonstate, full, copy);
+                                    hexit(buttonstate, full, copy, nowsuggested);
                                 });
                         } else if (activity.completion == -1) {
                             mid.css("cursor", "not-allowed");
@@ -319,8 +326,18 @@ define(['jquery'],
                             text.css("cursor", "default");
                         }
 
-                        function hexit(state, shapefill, copy) {
-                            ctx.clearRect(0, 0, flow.size.innersize, flow.size.innersizeY);
+                        function hexit(state, shapefill, copy, suggested) {
+                            ctx.clearRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
+                            if (suggested == 1) {
+                                // Then this is the suggested next activity.  Add corona.
+                                var grd = ctx.createRadialGradient(flow.size.innersizeX / 2, flow.size.innersizeY / 2
+                                    , flow.size.innersizeX * 0.4, flow.size.innersizeX / 2, flow.size.innersizeY / 2
+                                    , flow.size.innersizeY / 2);
+                                grd.addColorStop(0, 'rgba(255,215, 0, 0.5)');
+                                grd.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                                ctx.fillStyle = grd;
+                                ctx.fillRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
+                            }
                             const buttonheight = state == "down" ? flow.size.basebtn : state == "up" ? 0 : flow.size.basebtn / 2;
                             if (copy) {
                                 ctx.setLineDash([4, 2]);
@@ -332,7 +349,7 @@ define(['jquery'],
                             }
                             ctx.lineWidth = 1;
                             ctx.beginPath();
-                            ctx.moveTo(1, flow.size.y1 + buttonheight);
+                            ctx.moveTo(flow.size.x0, flow.size.y1 + buttonheight);
                             ctx.lineTo(flow.size.x1, flow.size.shapemargin + buttonheight);
                             ctx.lineTo(flow.size.x2, flow.size.shapemargin + buttonheight);
                             ctx.lineTo(flow.size.x3, flow.size.y1 + buttonheight);
@@ -353,8 +370,8 @@ define(['jquery'],
                                 ctx.strokeStyle = copy ? "black" : `hsl(${shapefill.hue},${toner2}%,${toner1}%)`;
 
                                 ctx.beginPath();
-                                ctx.moveTo(1, flow.size.y1 + topbtn);
-                                ctx.lineTo(1, flow.size.y1 + botbtn);
+                                ctx.moveTo(flow.size.x0, flow.size.y1 + topbtn);
+                                ctx.lineTo(flow.size.x0, flow.size.y1 + botbtn);
                                 ctx.lineTo(flow.size.x1, flow.size.y2 + botbtn);
                                 ctx.lineTo(flow.size.x1, flow.size.y2 + topbtn);
                                 ctx.closePath();
