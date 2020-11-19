@@ -406,25 +406,25 @@ define(['jquery'],
                                     parentplaced = flow.flowdata[activity.parentid].placed[0];
                                 }
                                 const thisplaced = activity.placed[0]; // Want .x and .y properties.
-                                const goright = (parentplaced.x - thisplaced.x > 0) ? 1 :
+                                const arrowleftish = (parentplaced.x - thisplaced.x > 0) ? 1 :
                                     (parentplaced.x - thisplaced.x == 0) ? 0 : -1;
-                                const godown = (parentplaced.y - thisplaced.y > 0) ? 1 : -1;
+                                const arrowupish = (parentplaced.y - thisplaced.y > 0) ? 1 : -1;
                                 var arrowpointX, arrowpointY, arrowgrad;
-                                if (goright == 0) {
+                                if (arrowleftish == 0) {
                                     arrowpointX = (flow.size.x2 + flow.size.x1) / 2; // (x2-x1)/2 + x1
-                                    arrowpointY = (godown == 1) ? flow.size.y2 + flow.size.basebtn :
+                                    arrowpointY = (arrowupish == 1) ? flow.size.y2 + flow.size.basebtn :
                                         flow.size.shapemargin;
-                                    arrowgrad = (godown == 1) ? Math.PI : 0;
-                                } else if (goright == 1) {
+                                    arrowgrad = (arrowupish == 1) ? Math.PI : 0;
+                                } else if (arrowleftish == 1) {
                                     arrowpointX = (flow.size.x3 + flow.size.x2) / 2;
-                                    arrowpointY = (godown == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
+                                    arrowpointY = (arrowupish == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
                                     arrowpointY += (flow.size.x3 - flow.size.x2) / 2 * flow.size.grad;
-                                    arrowgrad = Math.atan2(1 / 2, -godown * 2 / 7); // function params (dy, dx).
+                                    arrowgrad = Math.atan2(1 / 2, -arrowupish * 2 / 7); // function params (dy, dx).
                                 } else {
-                                    arrowpointX = flow.size.x1 / 2;
-                                    arrowpointY = (godown == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
-                                    arrowpointY += flow.size.x1 / 2 * flow.size.grad;
-                                    arrowgrad = Math.atan2(-1 / 2, -godown * 2 / 7);
+                                    arrowpointX = (flow.size.x1 + flow.size.x0) / 2;
+                                    arrowpointY = (arrowupish == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
+                                    arrowpointY += (flow.size.x1 - flow.size.x0) / 2 * flow.size.grad;
+                                    arrowgrad = Math.atan2(-1 / 2, -arrowupish * 2 / 7);
                                 }
                                 ctx.save();
                                 ctx.translate(arrowpointX, arrowpointY);
