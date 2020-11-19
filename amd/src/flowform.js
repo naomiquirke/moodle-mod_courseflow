@@ -279,7 +279,7 @@ define(['jquery'],
                     wrapvis.append(acccheck);
 
                     // Add availability info.
-                    let avail = $(`<div id="info-avail-${index}"</div>`)
+                    let avail = $(`<div id="info-avail-${index}"></div>`)
                         .attr("class", activityinfo[index].open == 1 ? "checkboxinfo" : "restrictedinfo")
                         .html(activityinfo[index].open == 1 ? "-" : activityinfo[index].availinfo);
                     me.append(avail);
