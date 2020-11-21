@@ -214,16 +214,20 @@ define(['jquery'],
                     function setSizes() {
                         // Work out the sizing of each shape.
                         let shapeholder = $(flow.container);
-                        let width = shapeholder.prop("clientWidth");
+                        let width = $(`li#module-${flow.mod}`).css("width");
+                        shapeholder.css("width", width); // Set this in case the theme has cut it down due to being empty initially.
                         let hexdata = {};
                         let font = "inherit";
-
+                        width = parseInt(width, 10) - 10;
                         if (width < 300) {
                             shapeholder.parent().css("margin-left", 0);
-                            width = shapeholder.parent().prop("clientWidth");
-                            hexdata.maxcol = 5;
+                            hexdata.maxcol = 4;
                             font = "smaller";
                         } else if (width < 500) {
+                            shapeholder.parent().css("margin-left", 0);
+                            hexdata.maxcol = 5;
+                            font = "smaller";
+                        } else if (width < 750) {
                             hexdata.maxcol = 6;
                         } else if (width < 1000) {
                             hexdata.maxcol = 7;

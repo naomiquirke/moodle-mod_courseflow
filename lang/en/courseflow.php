@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['avail_colour'] = '#03962A';
+$string['avail_colour'] = '#2500EB';
 $string['avail_colour_descr'] = 'Step colour when activity available to students and uncompleted.';
 $string['avail_colour_title'] = 'Step available colour';
 $string['chooseactivities'] = 'Setup activities for flow';
