@@ -46,14 +46,14 @@ define(['jquery'],
                 window.addEventListener("orientationchange", function () {
                     drawShapes(flow);
                 });
-
+                var hexclicked = 0;
                 drawShapes(flow);
 
                 //======================================================================================
                 // Once we have the sizing, work out the flow.placing and then draw the shapes.
                 function drawShapes(flow) {
                     flow.container = `div#cf-container-${flow.mod}`;
-                    $(flow.container).on("mousedown touchstart", function (e) {
+                    $(flow.container).on("mousedown", function (e) {
                         e.preventDefault();
                     });
                     flow.floworder = Object.entries(flow.flowdata).sort(
@@ -312,15 +312,26 @@ define(['jquery'],
                         if (((flow.role == 0) || (buttonstate != "down")) && (!activity.deleted)) {
                             // Second option alternative: ((activity.completion >= 0) && (parentcompletion == 1))) {
                             mid.css("cursor", "pointer")
-                                .on("click", function () {
-                                    location.href = activity.link;
-                                })
                                 .on("mousedown touchstart", function (e) {
                                     e.preventDefault();
+                                    hexclicked = id;
                                     hexit("down", full, copy, nowsuggested);
+                                    e.currentTarget.addEventListener("mouseleave", function () {
+                                        hexclicked = 0;
+                                        hexit(buttonstate, full, copy, nowsuggested);
+                                    }, { once: true });
+                                    e.currentTarget.addEventListener("touchmove", function () {
+                                        hexclicked = 0;
+                                        hexit(buttonstate, full, copy, nowsuggested);
+                                    }, { once: true });
                                 })
-                                .on("mouseleave touchend mouseup", function () {
+                                .on("click touchend mouseup", function () {
+                                    if (hexclicked != id) {
+                                        hexclicked = 0;
+                                        return;
+                                    }
                                     hexit(buttonstate, full, copy, nowsuggested);
+                                    location.href = activity.link;
                                 });
                         } else if (activity.completion == -1) {
                             mid.css("cursor", "not-allowed");
