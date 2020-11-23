@@ -47,7 +47,6 @@ class mod_courseflow_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addElement('static', 'note', get_string('noteoncompletion', 'courseflow'));
-        $this->standard_intro_elements();
         $this->standard_coursemodule_elements();
         $this->add_action_buttons(true, get_string('chooseactivities', 'courseflow'), get_string('return', 'courseflow'));
     }
