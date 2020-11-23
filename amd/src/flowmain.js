@@ -37,7 +37,7 @@ define(['jquery'],
                 }
                 if (flow.role != 0) {
                     // Hide the link to the activity edit.
-                    $(`li#module-${flow.mod} div.activityinstance a.aalink`).css("visibility", "hidden");
+                    $(`li#module-${flow.mod} div.activityinstance a`).css("visibility", "hidden");
                 }
 
                 window.addEventListener("resize", function () {
