@@ -174,5 +174,6 @@ function courseflow_cm_info_view($info) {
 function courseflow_check_updates_since(cm_info $cm, $from, $filter = array()) {
     $updates = course_check_module_updates_since($cm, $from, array(), $filter);
     return $updates;
-    // We need to update after every completion. Is it necessary to add more here?
+    // For students we need to update after every activity completion if included in flow.
+    // So eventually necessary to add more here.
 }
