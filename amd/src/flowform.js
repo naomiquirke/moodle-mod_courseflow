@@ -26,13 +26,13 @@
  * @module mod_courseflow/flowform
  */
 define(['jquery'],
-    function ($) {
+    function($) {
         /**
          * @alias module:mod_courseflow/flowform
          */
 
         return {
-            init: function () {
+            init: function() {
                 // Set up display and get information about activities and current flows.
                 var flowlabel = $("#id_flow");
                 $(flowlabel.parent()).before('<div class="flowdisplay" id="flowdisplay"></div>');
@@ -40,7 +40,7 @@ define(['jquery'],
                 var activityinfo = JSON.parse($('input[name=activityinfo]').val());
                 var allowstealth = $('input[name=allowstealth]').val();
 
-                //Set up parent selectors
+                // Set up parent selectors
                 var parentselector = $("#id_parentselector");
                 parentselector.attr("class", "parentselector custom-select");
                 parentselector.hide();
@@ -79,10 +79,12 @@ define(['jquery'],
 
                 // Set up activity selector.
                 // When an activity is selected, its properties are updated, it's added to the flow display, and selectors added.
-                activityselector.change(function () {
+                activityselector.change(function() {
                     var activityselected = $("#id_activityselector option:selected");
                     var flower = activityselected.val();
-                    if (flower == 0) { return; }
+                    if (flower == 0) {
+                        return;
+                    }
                     updaterecord(flower);
                     // Move chosen from activity to parent selector.
                     addline(flower, activityinfo[flower].name);
@@ -92,8 +94,10 @@ define(['jquery'],
                     outputflow();
                 });
 
-                // Changing the content of activity records.
-                // Details are set in activityinfo so that colour etc choices persist within one session.
+                /** Changing the content of activity records.
+                  * Details are set in activityinfo so that colour etc choices persist within one session.
+                  * @param {number} chosen activity to update
+                */
                 function updaterecord(chosen) {
                     if (activityinfo[chosen].preferred > 0) { // Then we are deleting.
                         activityinfo[chosen].preferred = 0;
@@ -103,12 +107,13 @@ define(['jquery'],
                     }
                 }
 
-                // Tidy up then publish the changes into the textbox ready for form save.
+                /**  Tidy up then publish the changes into the textbox ready for form save.
+                 */
                 function outputflow() {
-                    $(".btn-flowstep-down").attr('disabled', false).css({ opacity: 1 });
-                    $(".btn-flowstep-down").last().attr('disabled', true).css({ opacity: 0.5 });
-                    $(".btn-flowstep-up").attr('disabled', false).css({ opacity: 1 });
-                    $(".btn-flowstep-up").first().attr('disabled', true).css({ opacity: 0.5 });
+                    $(".btn-flowstep-down").attr('disabled', false).css({opacity: 1});
+                    $(".btn-flowstep-down").last().attr('disabled', true).css({opacity: 0.5});
+                    $(".btn-flowstep-up").attr('disabled', false).css({opacity: 1});
+                    $(".btn-flowstep-up").first().attr('disabled', true).css({opacity: 0.5});
 
                     flowlabel.val(JSON.stringify(activityinfo, (name, value) => {
                         if (!name || !activityinfo[name]) {
@@ -118,16 +123,24 @@ define(['jquery'],
                     }
                     ));
                 }
+                /** Add table headers with their tooltips.
+                  * @param {string} sizestyle classname for specified column.
+                  * @param {string} name of column with associated tooltip
+                  * @return {string}
+                */
                 function addheader(sizestyle, name) {
                     const headname = M.str.courseflow[name];
                     const helpname = M.str.courseflow[name + 'help'];
                     return $(`<div data-toggle="tooltip"
-                    title = "${helpname}"
-                    class = "${sizestyle} headerhelp">${headname}</div>`);
+                        title = "${helpname}"
+                        class = "${sizestyle} headerhelp">${headname}</div>`);
                 }
 
-                // Add a line on to the flow display.
-                // Updating parent selectors.
+                /** Add a line on to the flow display. If it is the first, add the column headers.
+                  * Updating parent selectors.
+                  * @param {number} index activity id
+                  * @param {number} value activity name
+                  */
                 function addline(index, value) {
                     // First check if this is the first, if so then need to add column titles.
                     if (activityinfo[index].preferred == 1) {
@@ -145,38 +158,39 @@ define(['jquery'],
                         );
                     }
                     // Now add the new line
+                    // First the activity name
                     $(`<div class="flowstep" id="flowstep-${index}">`).appendTo("#flowdisplay");
                     var me = $(`#flowstep-${index}`);
                     me.append(`<div class="stepname">${value}</div>`);
-
+                    // Next the remove, up & down buttons
                     const removebutton = $('<input/>')
                         .attr({
                             type: "button",
-                            class: "btn-flowstep-remove btn-secondary",
+                            "class": "btn-flowstep-remove btn-secondary",
                             id: "btn-flowstep-" + index,
                             value: ' \u26CC '
                         })
-                        .on("click", function () {
+                        .on("click", function() {
                             removestep(index);
                         });
                     const upbutton = $('<input/>')
                         .attr({
                             type: "button",
-                            class: "btn-flowstep-up btn-secondary",
+                            "class": "btn-flowstep-up btn-secondary",
                             id: "btn-stepup-" + index,
                             value: ' \u22C0 '
                         })
-                        .on("click", function () {
+                        .on("click", function() {
                             movestep(index, "up");
                         });
                     const downbutton = $('<input/>')
                         .attr({
                             type: "button",
-                            class: "btn-flowstep-down btn-secondary",
+                            "class": "btn-flowstep-down btn-secondary",
                             id: "btn-stepdown-" + index,
                             value: ' \u22C1 '
                         })
-                        .on("click", function () {
+                        .on("click", function() {
                             movestep(index, "down");
                         });
                     me.append(`<div class="btnset" id="wrap-btn-${index}"></div>`);
@@ -190,7 +204,7 @@ define(['jquery'],
                             id: `sel-flowstep-${index}`,
                             name: `parentselector-${activityinfo[index].name}`
                         })
-                        .on("click", function () {
+                        .on("click", function() {
                             activityinfo[index].parentid = $(this).val();
                             outputflow();
                         })
@@ -201,11 +215,11 @@ define(['jquery'],
                     const colourbutton = $('<input/>')
                         .attr({
                             type: "color",
-                            class: "btn-flowstepcolour",
+                            "class": "btn-flowstepcolour",
                             id: `btn-flowstepcolour-${index}`,
                         })
                         .val(activityinfo[index].colouravail)
-                        .on("change", function () {
+                        .on("change", function() {
                             activityinfo[index].colouravail = $(`#btn-flowstepcolour-${index}`).val();
                             outputflow();
                         });
@@ -215,7 +229,7 @@ define(['jquery'],
                     // Add section number & visibility.
                     const section = $(`<div> ${activityinfo[index].sectionnum} </div>`)
                         .attr({
-                            class: "checkboxinfo",
+                            "class": "checkboxinfo",
                             id: `#wrap-secvis-${index}`
                         });
                     me.append(section);
@@ -227,15 +241,16 @@ define(['jquery'],
                     // Note we are not using standard Moodle setting method for when section is not visible.
                     // This will be 0 if accessible is 0 or sectionvisible is 0.
                     // In PHP result will be reset to 1 even if 0 unless stealth is enabled.
-                    let chkvis = activityinfo[index].sectionvisible == 0 ? `<input type="checkbox" disabled/>` :
-                        activityinfo[index].visiblepage == 1 ? `<input type="checkbox" checked/>` : `<input type="checkbox"/>`;
+                    const sectionvisible = activityinfo[index].visiblepage == 1 ? `<input type="checkbox" checked/>`
+                        : `<input type="checkbox"/>`;
+                    let chkvis = activityinfo[index].sectionvisible == 0 ? `<input type="checkbox" disabled/>` : sectionvisible;
                     let visiblitycheck = $(chkvis)
                         .attr({
                             id: `chk-vis-${index}`,
-                            class: "checkboxgroup1", //form-check-input
+                            "class": "checkboxgroup1", // Form-check-input
                             name: `chk-vis-${activityinfo[index].name}`
                         })
-                        .on("click", function () {
+                        .on("click", function() {
                             activityinfo[index].visiblepage = $(`#chk-vis-${index}`).prop("checked") ? 1 : 0;
                             if (activityinfo[index].visiblepage) {
                                 // Set accessible to be true
@@ -259,9 +274,9 @@ define(['jquery'],
                         .attr({
                             name: `chk-acc-${activityinfo[index].name}`,
                             id: `chk-acc-${index}`,
-                            class: "checkboxgroup2", //form-check-input
+                            "class": "checkboxgroup2", // Form-check-input
                         })
-                        .on("click", function () {
+                        .on("click", function() {
                             activityinfo[index].accessible = $(`#chk-acc-${index}`).prop("checked") ? 1 : 0;
                             if (!activityinfo[index].accessible) {
                                 // Set visibility on page to be false.  This setting has different mechanism from Moodle visibility.
@@ -285,15 +300,17 @@ define(['jquery'],
                     me.append(avail);
                 }
 
-                // Take off a selected activity from the flow.
+                /** Take off a selected activity from the flow.
+                  * @param {number} removedid activity id
+                  */
                 function removestep(removedid) {
                     // Find anything that has set this step as a parent.
-                    $.each(activityinfo, function (index, value) {
+                    $.each(activityinfo, function(index, value) {
                         if (value.parentid == removedid) {
                             activityinfo[index].parentid = "0";
-                            $(`#sel-flowstep-${index}`).css("backgroundColor", "pink").animate({ "opacity": 0.5 }, "fast",
-                                function () {
-                                    $(this).css({ "backgroundColor": "initial", "opacity": 1 });
+                            $(`#sel-flowstep-${index}`).css("backgroundColor", "pink").animate({"opacity": 0.5}, "fast",
+                                function() {
+                                    $(this).css({"backgroundColor": "initial", "opacity": 1});
                                 });
                         }
                     });
@@ -312,6 +329,10 @@ define(['jquery'],
                     outputflow();
                 }
 
+                /** Move a selected activity in the flow up or down, by swapping with activity above or below.
+                  * @param {number} index activity id
+                  * @param {string} direction up or down
+                  */
                 function movestep(index, direction) {
                     var index1, index2;
                     const swap = (direction == "up") ? $(`#flowstep-${index}`).prev() : $(`#flowstep-${index}`).next();

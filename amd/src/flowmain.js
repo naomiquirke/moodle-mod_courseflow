@@ -25,13 +25,13 @@
  * @module mod_courseflow/flowmain
  */
 define(['jquery'],
-    function ($) {
+    function($) {
         /**
          * @alias module:mod_courseflow/flowmain
          */
 
         return {
-            init: function (flow) {
+            init: function(flow) {
                 if (flow.flowheight == 0) {
                     return;
                 }
@@ -40,24 +40,27 @@ define(['jquery'],
                     $(`li#module-${flow.mod} div.activityinstance a`).css("visibility", "hidden");
                 }
 
-                window.addEventListener("resize", function () {
+                window.addEventListener("resize", function() {
                     drawShapes(flow);
                 });
-                window.addEventListener("orientationchange", function () {
+                window.addEventListener("orientationchange", function() {
                     drawShapes(flow);
                 });
                 var hexclicked = 0;
                 drawShapes(flow);
 
-                //======================================================================================
-                // Once we have the sizing, work out the flow.placing and then draw the shapes.
+                /** Once we have the sizing, work out the flow.placing and then draw the shapes.
+                 * @param {object} flow - All the details of this hex flow.
+                */
                 function drawShapes(flow) {
                     flow.container = `div#cf-container-${flow.mod}`;
-                    $(flow.container).on("mousedown", function (e) {
+                    $(flow.container).on("mousedown", function(e) {
                         e.preventDefault();
                     });
                     flow.floworder = Object.entries(flow.flowdata).sort(
-                        (a, b) => { return a[1].preferred - b[1].preferred; });
+                        (a, b) => {
+                            return a[1].preferred - b[1].preferred;
+                        });
 
                     flow.size = setSizes();
                     let maxrow = placelist();
@@ -97,7 +100,7 @@ define(['jquery'],
                             newholder.animate({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
                                 "top": (hexplacement.y * flow.size.stackdown) + "px"
-                            }, { queue: false });
+                            }, {queue: false});
                         }
                         // Get rid of unused foldbacks. Continue from prev. index.
                         let oldouter = $(`#cf-outer-hex-${flow.mod}-${shape}-${index}`);
@@ -107,10 +110,11 @@ define(['jquery'],
                             oldouter = $(`#cf-outer-hex-${flow.mod}-${shape}-${index}`);
                         }
                     }
-
+                /** Get relative placements.
+                 * @returns {number} realmax = number of lines.
+                */
                     function placelist() {
-                        // Get relative placements.
-                        // let maxfoldback = 0;
+                        // Let maxfoldback = 0;
                         for (let c of flow.floworder) {
                             let cp = flow.flowdata[c[0]];
                             cp.placed = [];
@@ -124,14 +128,14 @@ define(['jquery'],
                                     cp.placed[0].placing[i] = [];
                                 }
                                 cp.placed[0].placing[1][0] = cp.id;
-                                cp.baseparent = { id: cp.id, version: 0 };
+                                cp.baseparent = {id: cp.id, version: 0};
                             } else {
                                 let success = 0;
                                 let version = -1;
                                 while (!success) {
                                     version++;
                                     success = createplace(cp, version);
-                                    // maxfoldback = Math.max(version, maxfoldback);
+                                    // Maxfoldback = Math.max(version, maxfoldback);
                                 }
                             }
                         }
@@ -152,14 +156,19 @@ define(['jquery'],
                         }
                         return realmax;
                     }
+                    /** Set up a position.
+                     * @param {object} cp1
+                     * @param {number} foldback giving version of hex on page
+                     * @returns {boolean}
+                    */
                     function createplace(cp1, foldback) {
                         let pp = flow.flowdata[cp1.parentid];
-                        cp1.baseparent = (foldback == 0) ? pp.baseparent : { id: pp.id, version: foldback };
+                        cp1.baseparent = (foldback == 0) ? pp.baseparent : {id: pp.id, version: foldback};
                         let bp = flow.flowdata[cp1.baseparent.id];
                         let baseplacements = bp.placed[cp1.baseparent.version];
                         let gotit = getplace(pp.placed[foldback].x, pp.placed[foldback].ry, baseplacements.placing);
                         if (gotit) {
-                            cp1.placed[0] = { x: gotit[0], ry: gotit[1], rw: 0 };
+                            cp1.placed[0] = {x: gotit[0], ry: gotit[1], rw: 0};
                             baseplacements.placing[gotit[0]][gotit[1]] = cp1.id;
                             baseplacements.rw = Math.max(cp1.placed[0].x, baseplacements.rw);
                             baseplacements.minusy = Math.min(cp1.placed[0].ry, baseplacements.minusy);
@@ -183,6 +192,12 @@ define(['jquery'],
                         }
 
                     }
+                    /** Find an empty spot to place the new hex.
+                     * @param {number} x position of parent
+                     * @param {number} y position of parent
+                     * @param {array} placing table of which hex is where
+                     * @returns {array} place of new hex with reference to old, or null if cannot be placed.
+                    */
                     function getplace(x, y, placing) {
                         // Check next to the right down.
                         if ((x + 1 < flow.size.maxcol) && (placing[x + 1][y + 1] === undefined)) {
@@ -210,9 +225,10 @@ define(['jquery'],
                         }
                         return null;
                     }
-                    // Funtion to set up the sizes of elements based on screen width.  Taken out of main for clarity.
+                    /** Set up the sizes of each shape based on screen width.
+                     * @returns {object} hexdata.
+                    */
                     function setSizes() {
-                        // Work out the sizing of each shape.
                         let shapeholder = $(flow.container);
                         let width = $(`li#module-${flow.mod}`).css("width");
                         shapeholder.css("width", width); // Set this in case the theme has cut it down due to being empty initially.
@@ -238,7 +254,7 @@ define(['jquery'],
                             }
                         }
                         hexdata.stackright = (width - 1) / (hexdata.maxcol * 1.1);
-                        hexdata.shapemargin = (hexdata.stackright) * 0.1;  // Space between shapes.
+                        hexdata.shapemargin = (hexdata.stackright) * 0.1; // Space between shapes.
                         hexdata.basebtn = (hexdata.stackright) * 0.1; // Height of button.
                         let truex2 = hexdata.stackright - hexdata.shapemargin;
                         hexdata.innersize = truex2 * 7 / 5;
@@ -267,8 +283,10 @@ define(['jquery'],
                         return hexdata;
                     }
 
-
-                    // Draw the shape on the canvas, and add the link if applicable.
+                    /** Set up to draw the shape on the canvas, getting the colours etc, and add the link if applicable.
+                     * @param {number} id of activity associated with hex
+                     * @param {number} copy version of hex
+                    */
                     function drawhex(id, copy) {
                         var buttonstate;
                         let canvas = $(`#cf-inner-hex-${flow.mod}-${id}-${copy}`);
@@ -307,25 +325,26 @@ define(['jquery'],
                         nextsuggested = nextsuggested > 0 ? 2 : 0;
 
                         // Now the link & text.
-                        let textcolour = copy ? "black" : (full.light < 65) ? "white" : "black";
+                        let whitemaybe = (full.light < 65) ? "white" : "black";
+                        let textcolour = copy ? "black" : whitemaybe;
                         text.css("color", textcolour);
                         if (((flow.role == 0) || (buttonstate != "down")) && (!activity.deleted)) {
                             // Second option alternative: ((activity.completion >= 0) && (parentcompletion == 1))) {
                             mid.css("cursor", "pointer")
-                                .on("mousedown touchstart", function (e) {
+                                .on("mousedown touchstart", function(e) {
                                     e.preventDefault();
                                     hexclicked = id;
                                     hexit("down", full, copy, nowsuggested);
-                                    e.currentTarget.addEventListener("mouseleave", function () {
+                                    e.currentTarget.addEventListener("mouseleave", function() {
                                         hexclicked = 0;
                                         hexit(buttonstate, full, copy, nowsuggested);
-                                    }, { once: true });
-                                    e.currentTarget.addEventListener("touchmove", function () {
+                                    }, {once: true});
+                                    e.currentTarget.addEventListener("touchmove", function() {
                                         hexclicked = 0;
                                         hexit(buttonstate, full, copy, nowsuggested);
-                                    }, { once: true });
+                                    }, {once: true});
                                 })
-                                .on("click touchend mouseup", function () {
+                                .on("click touchend mouseup", function() {
                                     if (hexclicked != id) {
                                         hexclicked = 0;
                                         return;
@@ -341,6 +360,12 @@ define(['jquery'],
                             text.css("cursor", "default");
                         }
 
+                        /** Draw the shape on the canvas.
+                         * @param {string} state whether the button is up, down, or in the middle
+                         * @param {object} shapefill colour given in HSL.
+                         * @param {number} copy the version of the hex, if 0 then original else not.
+                         * @param {boolean} suggested if this hex has been suggested as the next activity.
+                        */
                         function hexit(state, shapefill, copy, suggested) {
                             ctx.clearRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
                             if (suggested == 1) {
@@ -353,7 +378,8 @@ define(['jquery'],
                                 ctx.fillStyle = grd;
                                 ctx.fillRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
                             }
-                            const buttonheight = state == "down" ? flow.size.basebtn : state == "up" ? 0 : flow.size.basebtn / 2;
+                            const statenotdownsize = state == "up" ? 0 : flow.size.basebtn / 2;
+                            const buttonheight = state == "down" ? flow.size.basebtn : statenotdownsize;
                             if (copy) {
                                 ctx.setLineDash([4, 2]);
                                 ctx.strokeStyle = "black";
@@ -393,7 +419,7 @@ define(['jquery'],
                                 ctx.stroke();
                                 ctx.fill();
                                 if (!copy) {
-                                    ctx.fillRect( // x, y, width, height.
+                                    ctx.fillRect( // X, y, width, height.
                                         flow.size.x1, flow.size.y2 + topbtn,
                                         flow.size.x2 - flow.size.x1, botbtn - topbtn);
                                 }
@@ -410,6 +436,8 @@ define(['jquery'],
                                 ctx.stroke();
                                 ctx.fill();
                             }
+                            /** Add the pointers into the hex.
+                            */
                             function drawpointer() {
                                 if (activity.parentid == 0) {
                                     return;
@@ -421,20 +449,20 @@ define(['jquery'],
                                     parentplaced = flow.flowdata[activity.parentid].placed[0];
                                 }
                                 const thisplaced = activity.placed[0]; // Want .x and .y properties.
-                                const arrowleftish = (parentplaced.x - thisplaced.x > 0) ? 1 :
-                                    (parentplaced.x - thisplaced.x == 0) ? 0 : -1;
+                                const whenarrownotleftish = (parentplaced.x - thisplaced.x == 0) ? 0 : -1;
+                                const arrowsideways = (parentplaced.x - thisplaced.x > 0) ? 1 : whenarrownotleftish;
                                 const arrowupish = (parentplaced.y - thisplaced.y > 0) ? 1 : -1;
                                 var arrowpointX, arrowpointY, arrowgrad;
-                                if (arrowleftish == 0) {
+                                if (arrowsideways == 0) {
                                     arrowpointX = (flow.size.x2 + flow.size.x1) / 2; // (x2-x1)/2 + x1
                                     arrowpointY = (arrowupish == 1) ? flow.size.y2 + flow.size.basebtn :
                                         flow.size.shapemargin;
                                     arrowgrad = (arrowupish == 1) ? Math.PI : 0;
-                                } else if (arrowleftish == 1) {
+                                } else if (arrowsideways == 1) {
                                     arrowpointX = (flow.size.x3 + flow.size.x2) / 2;
                                     arrowpointY = (arrowupish == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
                                     arrowpointY += (flow.size.x3 - flow.size.x2) / 2 * flow.size.grad;
-                                    arrowgrad = Math.atan2(1 / 2, -arrowupish * 2 / 7); // function params (dy, dx).
+                                    arrowgrad = Math.atan2(1 / 2, -arrowupish * 2 / 7); // Function params (dy, dx).
                                 } else {
                                     arrowpointX = (flow.size.x1 + flow.size.x0) / 2;
                                     arrowpointY = (arrowupish == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
@@ -452,13 +480,19 @@ define(['jquery'],
                                 ctx.closePath();
                                 ctx.fill();
                                 ctx.restore();
-                                //ctx.arc(arrowpointX, arrowpointY, flow.size.shapemargin / 2, 0, 2 * Math.PI);
+                                // Ctx.arc(arrowpointX, arrowpointY, flow.size.shapemargin / 2, 0, 2 * Math.PI);
                             }
                         }
+                        /** Convert hex to HSL.
+                         * Copied from https://css-tricks.com/converting-color-spaces-in-javascript/
+                         * @param {string} H hex colour
+                         * @return {object} HSL colour
+                        */
                         function toHSL(H) {
-                            // Copied from https://css-tricks.com/converting-color-spaces-in-javascript/
                             // Convert hex to RGB first
-                            let r = 0, g = 0, b = 0;
+                            let r = 0,
+                                g = 0,
+                                b = 0;
                             if (H.length == 4) {
                                 r = "0x" + H[1] + H[1];
                                 g = "0x" + H[2] + H[2];
@@ -477,15 +511,17 @@ define(['jquery'],
                             let cmin = Math.min(r, g, b),
                                 cmax = Math.max(r, g, b),
                                 delta = cmax - cmin,
-                                h = 0, s = 0, l = 0;
+                                h = 0,
+                                s = 0,
+                                l = 0;
                             // Calculate hue
-                            if (delta == 0) {// No difference
+                            if (delta == 0) { // No difference
                                 h = 0;
-                            } else if (cmax == r) {// Red is max
+                            } else if (cmax == r) { // Red is max
                                 h = ((g - b) / delta) % 6;
-                            } else if (cmax == g) {// Green is max
+                            } else if (cmax == g) { // Green is max
                                 h = (b - r) / delta + 2;
-                            } else {// Blue is max
+                            } else { // Blue is max
                                 h = (r - g) / delta + 4;
                             }
                             h = Math.round(h * 60);
@@ -504,7 +540,7 @@ define(['jquery'],
                             s = +(s * 100).toFixed(1);
                             l = +(l * 100).toFixed(1);
 
-                            return { "hue": h, "sat": s, "light": l };
+                            return {"hue": h, "sat": s, "light": l};
                         }
                     }
                 }
