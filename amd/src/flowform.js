@@ -49,7 +49,7 @@ define(['jquery'],
 
                 // Do check to see if there are prepared activities ready.  Do after prev so it looks tidy.
                 if ($.isEmptyObject(activityinfo)) {
-                    $("#flowdisplay").text(M.str.courseflow.flowformalert).addClass("cf-teachermessage");
+                    $("#flowdisplay").text(M.util.get_string('flowformalert', 'mod_courseflow')).addClass("cf-teachermessage");
                     activityselector.hide();
                     return;
                 }
@@ -129,8 +129,8 @@ define(['jquery'],
                   * @return {string}
                 */
                 function addheader(sizestyle, name) {
-                    const headname = M.str.courseflow[name];
-                    const helpname = M.str.courseflow[name + 'help'];
+                    const headname = M.util.get_string(name, 'mod_courseflow');
+                    const helpname = M.util.get_string(name + 'help', 'mod_courseflow');
                     return $(`<div data-toggle="tooltip"
                         title = "${helpname}"
                         class = "${sizestyle} headerhelp">${headname}</div>`);

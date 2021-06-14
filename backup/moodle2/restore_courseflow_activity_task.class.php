@@ -53,7 +53,7 @@ class restore_courseflow_activity_task extends restore_activity_task {
      * Define the contents in the activity that must be
      * processed by the link decoder
      */
-    static public function define_decode_contents() {
+    public static function define_decode_contents() {
         $contents = [];
         // While there are links created, they are refreshed each view.
         return $contents;
@@ -63,7 +63,7 @@ class restore_courseflow_activity_task extends restore_activity_task {
      * Define the decoding rules for links belonging
      * to the activity to be executed by the link decoder
      */
-    static public function define_decode_rules() {
+    public static function define_decode_rules() {
         $rules = array();
 
         $rules[] = new restore_decode_rule('COURSEFLOWVIEWBYID', '/mod/courseflow/view.php?id=$1', 'course_module');
@@ -76,7 +76,7 @@ class restore_courseflow_activity_task extends restore_activity_task {
      * Define the restore log rules that will be applied
      *
      */
-    static public function define_courseflow_log_rules() {
+    public static function define_courseflow_log_rules() {
         $rules = array();
 
         $rules[] = new restore_log_rule('courseflow', 'add', 'view.php?id={course_module}', '{courseflow}');
@@ -89,7 +89,7 @@ class restore_courseflow_activity_task extends restore_activity_task {
      * Define the restore log rules for course that will be applied
      *
      */
-    static public function define_restore_log_rules_for_course() {
+    public static function define_restore_log_rules_for_course() {
         $rules = array();
 
         $rules[] = new restore_log_rule('courseflow', 'view all', 'index.php?id={course}', null);
