@@ -55,7 +55,7 @@ class restore_courseflow_activity_task extends restore_activity_task {
      */
     public static function define_decode_contents() {
         $contents = [];
-        // While there are links created, they are refreshed each view.
+        $contents[] = new restore_decode_content('courseflow', ['flow'], 'courseflow');
         return $contents;
     }
 
@@ -108,50 +108,29 @@ class restore_courseflow_activity_task extends restore_activity_task {
         $courseflow = $DB->get_record('courseflow', array('id' => $id));
         if (empty($courseflow->flow)) {
             return false;
-        } else {
-            $flowsteps = json_decode($courseflow->flow, true); // True option converts to associative array.
-            $translation = [];
-            foreach ($flowsteps as $cmids) {
-                $rec = \restore_dbops::get_backup_ids_record($restoreid, 'course_module', $cmids->id);
-                if (!$rec || !$rec->newitemid) {
-                    // If we are on the same course (e.g. duplicate) then we can just
-                    // use the existing one.
-                    if ($DB->record_exists('course_modules',
-                            ['id' => $cmid, 'course' => $courseid])) {
-                        $translation[$cmids->id] = $res;
-                    }
-                    // Otherwise should warn. TODO.
-                    $translation[$cmids->id] = 0;
-                } else {
-                    $translation[$cmids->id] = (int)$rec->newitemid;
+        }
+        $flowsteps = json_decode($courseflow->flow, true); // True option converts to associative array.
+        $translation = [];
+        foreach ($flowsteps as $cmids) {
+            $rec = \restore_dbops::get_backup_ids_record($restoreid, 'course_module', $cmids->id);
+            if (!$rec || !$rec->newitemid) {
+                // If we are on the same course (e.g. duplicate) then we can just
+                // use the existing one.
+                if ($DB->record_exists('course_modules',
+                        ['id' => $cmids->id, 'course' => $course])) {
+                    $translation[$cmids->id] = $cmids->id; // Was = $res but don't know what that is.
                 }
+                // Otherwise should warn. TODO.
+                $translation[$cmids->id] = 0;
+            } else {
+                $translation[$cmids->id] = (int)$rec->newitemid;
             }
-            foreach ($flowsteps as &$step) {
-                $step->id = $translation[$step->id];
-                $step->parentid = $translation[$step->parentid];
-            }
-            $courseflow->flow = json_encode($flowsteps);
-            $DB->update_record('courseflow', $courseflow);
         }
-    }
-    /**
-     * Repetition for cmid update.
-     *
-     * @param string $cmid one or more 'parentid'.
-     */
-    public function cmidupdate($cmid) {
-        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'course_module', $cmid);
-        if (!$rec || !$rec->newitemid) {
-            // If we are on the same course (e.g. duplicate) then we can just
-            // use the existing one.
-            if ($DB->record_exists('course_modules',
-                    ['id' => $cmid, 'course' => $courseid])) {
-                return $res;
-            }
-            // Otherwise should warn. TODO.
-            return 0;
-        } else {
-            return (int)$rec->newitemid;
+        foreach ($flowsteps as &$step) {
+            $step->id = $translation[$step->id];
+            $step->parentid = $translation[$step->parentid];
         }
+        $courseflow->flow = json_encode($flowsteps);
+        $DB->update_record('courseflow', $courseflow);
     }
 }

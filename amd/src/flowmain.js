@@ -40,6 +40,16 @@ define(['jquery'],
                     $(`li#module-${flow.mod} div.activityinstance a`).css("visibility", "hidden");
                 }
 
+                flow.container = `div#cf-container-${flow.mod}`;
+                $(flow.container).on("mousedown", function(e) {
+                    e.preventDefault();
+                });
+                $(`${flow.container} .cf-outer-hex`).css("position", "absolute");
+                flow.floworder = Object.entries(flow.flowdata).sort(
+                    (a, b) => {
+                        return a[1].preferred - b[1].preferred;
+                    });
+
                 window.addEventListener("resize", function() {
                     drawShapes(flow);
                 });
@@ -53,69 +63,58 @@ define(['jquery'],
                  * @param {object} flow - All the details of this hex flow.
                 */
                 function drawShapes(flow) {
-                    flow.container = `div#cf-container-${flow.mod}`;
-                    $(flow.container).on("mousedown", function(e) {
-                        e.preventDefault();
-                    });
-                    flow.floworder = Object.entries(flow.flowdata).sort(
-                        (a, b) => {
-                            return a[1].preferred - b[1].preferred;
-                        });
-
-                    flow.size = setSizes();
+                    flow.size = setSizes(flow.mod, flow.container);
                     let maxrow = placelist();
 
                     // Set the size of the containing element based on the number of hex rows that have been used.
                     $(flow.container).css("height", (maxrow + 0.8) * flow.size.stackdown + "px");
 
-                    // Set the size of the canvases containing the shapes.
-                    $(`${flow.container} canvas.cf-inner-hex`).attr({
-                        width: flow.size.innersizeX + "px",
-                        height: flow.size.innersizeY + "px"
-                    });
-                    $(`${flow.container} .cf-outer-hex`).css("position", "absolute");
                     // Initialise marker for next suggested shape, only one up button can have this.
-                    var nextsuggested = 0;
+                    let nextsuggested = 0;
                     // Draw the shapes
-                    for (const c of flow.floworder) {
-                        const shape = c[0];
-                        const placed = flow.flowdata[shape].placed;
-                        var index;
-                        for (index = 0; index < placed.length; index++) {
-                            const hexplacement = placed[index];
-                            let newholder = $(`#cf-outer-hex-${flow.mod}-${shape}-${index}`);
+                    flow.floworder.forEach(c => {
+                        const shapeid = c[0];
+                        const placed = flow.flowdata[shapeid].placed;
+                        let shapeversion = 0;
+                        for (; shapeversion < placed.length; shapeversion++) {
+                            const hexplacement = placed[shapeversion];
+                            let shapeholder = $(`#cf-outer-hex-${flow.mod}-${shapeid}-${shapeversion}`);
 
-                            if (newholder.length == 0) {
+                            if (shapeholder.length == 0) {
                                 // This must be drawn from scratch.
-                                newholder = $(`#cf-outer-hex-${flow.mod}-${shape}-0`).clone(true, true);
-                                newholder
-                                    .attr("id", `cf-outer-hex-${flow.mod}-${shape}-${index}`)
+                                shapeholder = $(`#cf-outer-hex-${flow.mod}-${shapeid}-0`).clone(true, true);
+                                shapeholder
+                                    .attr("id", `cf-outer-hex-${flow.mod}-${shapeid}-${shapeversion}`)
                                     .addClass("cf-clone");
-                                newholder.children(".cf-inner-hex").attr("id", `cf-inner-hex-${flow.mod}-${shape}-${index}`);
-                                newholder.children(".cf-hex-mid").attr("id", `cf-hex-mid-${flow.mod}-${shape}-${index}`);
-                                newholder.find(".cf-hex-txt").attr("id", `cf-hex-txt-${flow.mod}-${shape}-${index}`);
-                                newholder.appendTo($(`${flow.container}`));
+                                shapeholder.children(".cf-inner-hex")
+                                    .attr("id", `cf-inner-hex-${flow.mod}-${shapeid}-${shapeversion}`);
+                                shapeholder.children(".cf-hex-mid")
+                                    .attr("id", `cf-hex-mid-${flow.mod}-${shapeid}-${shapeversion}`);
+                                shapeholder.find(".cf-hex-txt").attr("id", `cf-hex-txt-${flow.mod}-${shapeid}-${shapeversion}`);
+                                shapeholder.appendTo($(`${flow.container}`));
                             }
-                            drawhex(shape, index);
-                            newholder.animate({
+                            drawhex(shapeid, shapeversion);
+                            shapeholder.animate({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
                                 "top": (hexplacement.y * flow.size.stackdown) + "px"
                             }, {queue: false});
                         }
-                        // Get rid of unused foldbacks. Continue from prev. index.
-                        let oldouter = $(`#cf-outer-hex-${flow.mod}-${shape}-${index}`);
+                        // Get rid of unused foldbacks. Continue from prev. shapeversion.
+                        let oldouter = $(`#cf-outer-hex-${flow.mod}-${shapeid}-${shapeversion}`);
                         while (oldouter.length >= 1) {
                             oldouter.remove();
-                            index++;
-                            oldouter = $(`#cf-outer-hex-${flow.mod}-${shape}-${index}`);
+                            shapeversion++;
+                            oldouter = $(`#cf-outer-hex-${flow.mod}-${shapeid}-${shapeversion}`);
                         }
-                    }
-                /** Get relative placements.
-                 * @returns {number} realmax = number of lines.
-                */
+                    });
+
+                    /** Get placements.
+                     * @returns {number} realmax = number of lines.
+                    */
                     function placelist() {
-                        // Let maxfoldback = 0;
-                        for (let c of flow.floworder) {
+                        // First get relative placements.
+                        // Maxfoldback = 0;
+                        flow.floworder.forEach(c => {
                             let cp = flow.flowdata[c[0]];
                             cp.placed = [];
                             if (cp.parentid == 0) {
@@ -138,12 +137,12 @@ define(['jquery'],
                                     // Maxfoldback = Math.max(version, maxfoldback);
                                 }
                             }
-                        }
+                        });
                         // Update to actual placements.
                         let realmax = 0;
-                        for (let c of flow.floworder) {
+                        flow.floworder.forEach(c => {
                             let cp = flow.flowdata[c[0]];
-                            for (let cpversion of cp.placed) {
+                            cp.placed.forEach(cpversion => {
                                 if (cpversion.rw) {
                                     cpversion.base = realmax - cpversion.minusy;
                                     cpversion.y = cpversion.ry + cpversion.base;
@@ -152,8 +151,8 @@ define(['jquery'],
                                     cpversion.y = cpversion.ry +
                                         flow.flowdata[cp.baseparent.id].placed[cp.baseparent.version].base;
                                 }
-                            }
-                        }
+                            });
+                        });
                         return realmax;
                     }
                     /** Set up a position.
@@ -225,12 +224,14 @@ define(['jquery'],
                         }
                         return null;
                     }
-                    /** Set up the sizes of each shape based on screen width.
+                    /** Set up the sizes of each shape based on screen width and returns stats for ordering.
+                     * @param {number} module id of flow
+                     * @param {string} container jquery element
                      * @returns {object} hexdata.
                     */
-                    function setSizes() {
-                        let shapeholder = $(flow.container);
-                        let width = $(`li#module-${flow.mod}`).css("width");
+                    function setSizes(module, container) {
+                        let shapeholder = $(container);
+                        let width = $(`li#module-${module}`).css("width");
                         shapeholder.css("width", width); // Set this in case the theme has cut it down due to being empty initially.
                         let hexdata = {};
                         let font = "inherit";
@@ -270,15 +271,20 @@ define(['jquery'],
                         hexdata.x0 = 1 + hexdata.shapemargin;
                         hexdata.x3 = hexdata.innersize - 1 + hexdata.shapemargin;
 
-                        $(`${flow.container} div.cf-hex-mid`).css({
+                        $(`${container} div.cf-hex-mid`).css({
                             height: hexdata.x2 + "px",
                             width: hexdata.x2 + "px",
                             top: hexdata.x1 / 2 + "px",
                             left: hexdata.x1 / 2 + "px",
                             position: "absolute"
                         });
-                        $(`${flow.container} div.cf-txtholder`).css({
+                        $(`${container} div.cf-txtholder`).css({
                             fontSize: font,
+                        });
+                        // Set the size of the canvases containing the shapes.
+                        $(`${container} canvas.cf-inner-hex`).attr({
+                            width: hexdata.innersizeX + "px",
+                            height: hexdata.innersizeY + "px"
                         });
                         return hexdata;
                     }
@@ -288,15 +294,13 @@ define(['jquery'],
                      * @param {number} copy version of hex
                     */
                     function drawhex(id, copy) {
-                        var buttonstate;
-                        let canvas = $(`#cf-inner-hex-${flow.mod}-${id}-${copy}`);
+                        let buttonstate = '';
+                        let canvas = $(`#cf-inner-hex-${flow.mod}-${id}-${copy}`).get(0).getContext('2d');
                         let mid = $(`#cf-hex-mid-${flow.mod}-${id}-${copy}`);
                         let text = $(`p#cf-hex-txt-${flow.mod}-${id}-${copy}`);
-                        var ctx = canvas.get(0).getContext('2d');
-
-                        var activity = flow.flowdata[id];
+                        let activity = flow.flowdata[id];
                         let full = toHSL(activity.colouravail);
-                        var parentcompletion = activity.parentid == 0 ? 1 : flow.flowdata[activity.parentid].completion;
+                        let parentcompletion = activity.parentid == 0 ? 1 : flow.flowdata[activity.parentid].completion;
                         if (!activity.deleted) {
                             if ((parentcompletion == 1) && (activity.completion == 0)) {
                                 buttonstate = "up";
@@ -319,7 +323,7 @@ define(['jquery'],
                                 buttonstate = "down";
                                 text.addClass("notvisible");
                             }
-                            hexit(buttonstate, full, copy, nextsuggested);
+                            hexit(canvas, buttonstate, full, copy, nextsuggested);
                         }
                         const nowsuggested = nextsuggested;
                         nextsuggested = nextsuggested > 0 ? 2 : 0;
@@ -334,14 +338,14 @@ define(['jquery'],
                                 .on("mousedown touchstart", function(e) {
                                     e.preventDefault();
                                     hexclicked = id;
-                                    hexit("down", full, copy, nowsuggested);
+                                    hexit(canvas, "down", full, copy, nowsuggested);
                                     e.currentTarget.addEventListener("mouseleave", function() {
                                         hexclicked = 0;
-                                        hexit(buttonstate, full, copy, nowsuggested);
+                                        hexit(canvas, buttonstate, full, copy, nowsuggested);
                                     }, {once: true});
                                     e.currentTarget.addEventListener("touchmove", function() {
                                         hexclicked = 0;
-                                        hexit(buttonstate, full, copy, nowsuggested);
+                                        hexit(canvas, buttonstate, full, copy, nowsuggested);
                                     }, {once: true});
                                 })
                                 .on("click touchend mouseup", function() {
@@ -349,7 +353,7 @@ define(['jquery'],
                                         hexclicked = 0;
                                         return;
                                     }
-                                    hexit(buttonstate, full, copy, nowsuggested);
+                                    hexit(canvas, buttonstate, full, copy, nowsuggested);
                                     location.href = activity.link;
                                 });
                         } else if (activity.completion == -1) {
@@ -361,16 +365,17 @@ define(['jquery'],
                         }
 
                         /** Draw the shape on the canvas.
+                         * @param {object} ctx canvas
                          * @param {string} state whether the button is up, down, or in the middle
                          * @param {object} shapefill colour given in HSL.
                          * @param {number} copy the version of the hex, if 0 then original else not.
                          * @param {boolean} suggested if this hex has been suggested as the next activity.
                         */
-                        function hexit(state, shapefill, copy, suggested) {
+                        function hexit(ctx, state, shapefill, copy, suggested) {
                             ctx.clearRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
                             if (suggested == 1) {
                                 // Then this is the suggested next activity.  Add corona.
-                                var grd = ctx.createRadialGradient(flow.size.innersizeX / 2, flow.size.innersizeY / 2
+                                let grd = ctx.createRadialGradient(flow.size.innersizeX / 2, flow.size.innersizeY / 2
                                     , flow.size.innersizeX * 0.4, flow.size.innersizeX / 2, flow.size.innersizeY / 2
                                     , flow.size.innersizeY / 2);
                                 grd.addColorStop(0, 'rgba(255,215, 0, 0.5)');
@@ -483,67 +488,68 @@ define(['jquery'],
                                 // Ctx.arc(arrowpointX, arrowpointY, flow.size.shapemargin / 2, 0, 2 * Math.PI);
                             }
                         }
-                        /** Convert hex to HSL.
-                         * Copied from https://css-tricks.com/converting-color-spaces-in-javascript/
-                         * @param {string} H hex colour
-                         * @return {object} HSL colour
-                        */
-                        function toHSL(H) {
-                            // Convert hex to RGB first
-                            let r = 0,
-                                g = 0,
-                                b = 0;
-                            if (H.length == 4) {
-                                r = "0x" + H[1] + H[1];
-                                g = "0x" + H[2] + H[2];
-                                b = "0x" + H[3] + H[3];
-                            } else if (H.length == 7) {
-                                r = "0x" + H[1] + H[2];
-                                g = "0x" + H[3] + H[4];
-                                b = "0x" + H[5] + H[6];
-                            }
-                            // Then to HSL. First make r, g, and b fractions of 1
-                            r /= 255;
-                            g /= 255;
-                            b /= 255;
-
-                            // Find greatest and smallest channel values
-                            let cmin = Math.min(r, g, b),
-                                cmax = Math.max(r, g, b),
-                                delta = cmax - cmin,
-                                h = 0,
-                                s = 0,
-                                l = 0;
-                            // Calculate hue
-                            if (delta == 0) { // No difference
-                                h = 0;
-                            } else if (cmax == r) { // Red is max
-                                h = ((g - b) / delta) % 6;
-                            } else if (cmax == g) { // Green is max
-                                h = (b - r) / delta + 2;
-                            } else { // Blue is max
-                                h = (r - g) / delta + 4;
-                            }
-                            h = Math.round(h * 60);
-
-                            // Make negative hues positive behind 360°
-                            if (h < 0) {
-                                h += 360;
-                            }
-                            // Calculate lightness
-                            l = (cmax + cmin) / 2;
-
-                            // Calculate saturation
-                            s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
-
-                            // Multiply l and s by 100
-                            s = +(s * 100).toFixed(1);
-                            l = +(l * 100).toFixed(1);
-
-                            return {"hue": h, "sat": s, "light": l};
-                        }
                     }
                 }
+                /** Convert hex to HSL.
+                 * Copied from https://css-tricks.com/converting-color-spaces-in-javascript/
+                 * @param {string} H hex colour
+                 * @return {object} HSL colour
+                */
+                function toHSL(H) {
+                    // Convert hex to RGB first
+                    let r = 0,
+                        g = 0,
+                        b = 0;
+                    if (H.length == 4) {
+                        r = "0x" + H[1] + H[1];
+                        g = "0x" + H[2] + H[2];
+                        b = "0x" + H[3] + H[3];
+                    } else if (H.length == 7) {
+                        r = "0x" + H[1] + H[2];
+                        g = "0x" + H[3] + H[4];
+                        b = "0x" + H[5] + H[6];
+                    }
+                    // Then to HSL. First make r, g, and b fractions of 1
+                    r /= 255;
+                    g /= 255;
+                    b /= 255;
+
+                    // Find greatest and smallest channel values
+                    let cmin = Math.min(r, g, b),
+                        cmax = Math.max(r, g, b),
+                        delta = cmax - cmin,
+                        h = 0,
+                        s = 0,
+                        l = 0;
+                    // Calculate hue
+                    if (delta == 0) { // No difference
+                        h = 0;
+                    } else if (cmax == r) { // Red is max
+                        h = ((g - b) / delta) % 6;
+                    } else if (cmax == g) { // Green is max
+                        h = (b - r) / delta + 2;
+                    } else { // Blue is max
+                        h = (r - g) / delta + 4;
+                    }
+                    h = Math.round(h * 60);
+
+                    // Make negative hues positive behind 360°
+                    if (h < 0) {
+                        h += 360;
+                    }
+                    // Calculate lightness
+                    l = (cmax + cmin) / 2;
+
+                    // Calculate saturation
+                    s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+
+                    // Multiply l and s by 100
+                    s = +(s * 100).toFixed(1);
+                    l = +(l * 100).toFixed(1);
+
+                    return {"hue": h, "sat": s, "light": l};
+                }
+
             }
         };
     }

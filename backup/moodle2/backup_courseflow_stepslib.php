@@ -38,10 +38,7 @@ class backup_courseflow_activity_structure_step extends backup_activity_structur
      */
     protected function define_structure() {
 
-        // To know if we are including userinfo.
-        // TODO  $userinfo = $this->get_setting_value('userinfo'); At present we ignore this because
-        // I haven't decided whether we should keep all this information or not.
-        // At present when we restore, if it userinfo is turned on then it keeps the approval turned on, otherwise it turns it off.
+        // Are we including userinfo? No.
 
         // Define each element separated.
         $courseflow = new backup_nested_element('courseflow', ['id'], [ // Core information that can form courseflow.
@@ -50,7 +47,7 @@ class backup_courseflow_activity_structure_step extends backup_activity_structur
         // Build the tree.
 
         // Define sources.
-        $courseflow ->set_source_table('courseflow', array('id' => backup::VAR_ACTIVITYID));
+        $courseflow->set_source_table('courseflow', array('id' => backup::VAR_ACTIVITYID));
 
         // Define id annotations.
 
