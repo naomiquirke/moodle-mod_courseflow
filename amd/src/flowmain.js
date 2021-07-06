@@ -31,36 +31,36 @@ define(['jquery'],
          */
 
         return {
-            init: function(flow) {
-                if (flow.flowheight == 0) {
+            init: function(coursestream) {
+                if (coursestream.flowheight == 0) {
                     return;
                 }
-                if (flow.role != 0) {
+                if (coursestream.role != 0) {
                     // Hide the link to the activity edit.
-                    $(`li#module-${flow.mod} div.activityinstance a`).css("visibility", "hidden");
+                    $(`li#module-${coursestream.mod} div.activityinstance a`).css("visibility", "hidden");
                 }
 
-                flow.container = `div#cf-container-${flow.mod}`;
-                $(flow.container).on("mousedown", function(e) {
+                coursestream.container = `div#cf-container-${coursestream.mod}`;
+                $(coursestream.container).on("mousedown", function(e) {
                     e.preventDefault();
                 });
-                $(`${flow.container} .cf-outer-hex`).css("position", "absolute");
-                flow.floworder = Object.entries(flow.flowdata).sort(
+//                $(`${coursestream.container} .cf-outer-hex`).css("position", "absolute");
+                coursestream.floworder = Object.entries(coursestream.flowdata).sort(
                     (a, b) => {
                         return a[1].preferred - b[1].preferred;
                     });
 
                 window.addEventListener("resize", function() {
-                    drawShapes(flow);
+                    drawShapes(coursestream);
                 });
                 window.addEventListener("orientationchange", function() {
-                    drawShapes(flow);
+                    drawShapes(coursestream);
                 });
                 var hexclicked = 0;
-                drawShapes(flow);
+                drawShapes(coursestream);
 
                 /** Once we have the sizing, work out the flow.placing and then draw the shapes.
-                 * @param {object} flow - All the details of this hex flow.
+                 * @param {object} flow - All the details of this flow.
                 */
                 function drawShapes(flow) {
                     flow.size = setSizes(flow.mod, flow.container);
@@ -88,12 +88,15 @@ define(['jquery'],
                                     .addClass("cf-clone");
                                 shapeholder.children(".cf-inner-hex")
                                     .attr("id", `cf-inner-hex-${flow.mod}-${shapeid}-${shapeversion}`);
+                                shapeholder.children(".cf-img")
+                                    .attr("id", `cf-img-${flow.mod}-${shapeid}-${shapeversion}`);
                                 shapeholder.children(".cf-hex-mid")
                                     .attr("id", `cf-hex-mid-${flow.mod}-${shapeid}-${shapeversion}`);
                                 shapeholder.find(".cf-hex-txt").attr("id", `cf-hex-txt-${flow.mod}-${shapeid}-${shapeversion}`);
                                 shapeholder.appendTo($(`${flow.container}`));
                             }
                             drawhex(shapeid, shapeversion);
+/*                            Updatelinks(shapeid, shapeversion);*/
                             shapeholder.animate({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
                                 "top": (hexplacement.y * flow.size.stackdown) + "px"

@@ -114,9 +114,10 @@ function courseflow_cm_info_view($info) {
         return;
     }
     $context = context_course::instance($COURSE->id);
+    $flowsaved = json_decode($stored->flow);
     $outerflow = new stdClass();
-    $outerflow->flowdata = json_decode($stored->flow);
-    if (!is_object($outerflow->flowdata)) {
+    $outerflow->tree = $flowsaved->tree;
+    if (!is_object($flowsaved->steps)) {
         return;
     }
     if (has_capability('mod/courseflow:addinstance', $context)) {
@@ -126,8 +127,8 @@ function courseflow_cm_info_view($info) {
         $outerflow->role = 1;
     }
     $outerflow->mod = $info->id;
-    $flowsteps = $outerflow->flowdata;
     $cmods = get_fast_modinfo($COURSE, $USER->id);
+    $flowsteps = (array)$flowsaved->steps;
     foreach ($flowsteps as &$step) {
         $cmid = $step->id;
         try { // If activity has been subsequently deleted after flow being edited.
@@ -137,25 +138,59 @@ function courseflow_cm_info_view($info) {
             $step->deleted = 1;
             $step->link = "#";
             $step->name = $step->name . " (deleted)";
-            $step->completion = 0;
+            $step->completion = -2;
+            $step->textclass = "cf-deleted";
+            $step->basehex = '../mod/courseflow/pix/basehex_deleted.svg';
             continue;
         }
 
         if ($cm->uservisible && $cm->visible) {
-            if ($outerflow->role) {
+            if ($outerflow->role) { // Participant.
                 // Have 'true' in following: assume most course activities will be included.
                 $activitycompletion = $completion->get_data($cm, true, $USER->id);
-                $step->completion = ($activitycompletion->completionstate > 0) ? 1 : 0;
+                if ($activitycompletion->completionstate > 0) {
+                    $step->completion = 1;
+                    $step->cfclass = "cf-available";
+                    $step->basehex = '../mod/courseflow/pix/basehex_up_half.svg';
+                } else {
+                    $step->completion = 0;
+
+                }
             } else {
                 $step->completion = 1;
+                $step->cfclass = "cf-available";
+                $step->basehex = '../mod/courseflow/pix/basehex_up_half.svg';
             }
         } else {
             $step->completion = -1;
+            $step->cfclass = "cf-hidden";
+            $step->basehex = '../mod/courseflow/pix/basehex_hidden.svg';
+            if ($outerflow->role) { // Participant.
+                $step->link = "#";
+            }
+        }
+    }
+    $parents = $outerflow->tree;
+//    error_log("\r\n" . time() . "******flowsteps*****" . "\r\n" . print_r($flowsteps, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
+
+    foreach ($parents as $parentid => $parent) {
+        foreach ($parent as $child) {
+            if ($flowsteps[$child]->completion == 0) {
+                if ($flowsteps[$parentid]->completion == 0) {
+                    $flowsteps[$child]->cfclass = "cf-notavailable";
+                    $flowsteps[$child]->basehex = '../mod/courseflow/pix/basehex_down.svg';
+                    $flowsteps[$child]->link = "#";
+                } else {
+                    $flowsteps[$child]->cfclass = "cf-next";
+                    $flowsteps[$child]->basehex = '../mod/courseflow/pix/basehex_up.svg';
+                }
+            }
         }
     }
     $outerflow->flowdata = $flowsteps;
     $outerflow->json = json_encode($outerflow);
-    $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with parameters in arrays.
+
+    $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with sparse arrays.
     $renderer = $PAGE->get_renderer('mod_courseflow');
     $rendered = $renderer->render_courseflow($outerflow);
 

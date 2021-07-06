@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2021061801;
+$plugin->version  = 2021070608;
 $plugin->requires = 2019111800; // Requires 3.8.
 $plugin->supported = [39, 311]; // Range from 3.9 to 3.11.
 $plugin->component = 'mod_courseflow';
