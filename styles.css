@@ -88,7 +88,7 @@
 }
 .path-mod-courseflow div.cf-outer-hex {
     position: absolute;
-    width: 20%;  /* Initial */
+    width: 0;  /* Initial */
 }
 .path-mod-courseflow div.cf-outer-hex img.cf-img {
     position: relative;

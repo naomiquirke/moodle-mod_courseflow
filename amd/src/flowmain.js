@@ -56,7 +56,6 @@ define(['jquery'],
                 window.addEventListener("orientationchange", function() {
                     drawShapes(coursestream);
                 });
-                var hexclicked = 0;
                 drawShapes(coursestream);
 
                 /** Once we have the sizing, work out the flow.placing and then draw the shapes.
@@ -284,7 +283,13 @@ define(['jquery'],
                         $(`${container} div.cf-txtholder`).css({
                             fontSize: font,
                         });
-                        // Set the size of the canvases containing the shapes.
+                        // Set the size of the shape images.
+                        const allimages = document.querySelectorAll(`${container} img.cf-img`);
+                        allimages.forEach(element => {
+                            element.width = hexdata.innersizeX;
+                            element.height = hexdata.innersizeY;
+                        });
+                        // Set the size of the canvases containing the corona and arrows.
                         $(`${container} canvas.cf-inner-hex`).attr({
                             width: hexdata.innersizeX + "px",
                             height: hexdata.innersizeY + "px"
@@ -297,84 +302,28 @@ define(['jquery'],
                      * @param {number} copy version of hex
                     */
                     function drawhex(id, copy) {
-                        let buttonstate = '';
+//                        Let heximage = $(`#cf-img-${flow.mod}-${id}-${copy}`);
                         let canvas = $(`#cf-inner-hex-${flow.mod}-${id}-${copy}`).get(0).getContext('2d');
-                        let mid = $(`#cf-hex-mid-${flow.mod}-${id}-${copy}`);
                         let text = $(`p#cf-hex-txt-${flow.mod}-${id}-${copy}`);
                         let activity = flow.flowdata[id];
-                        let full = toHSL(activity.colouravail);
-                        let parentcompletion = activity.parentid == 0 ? 1 : flow.flowdata[activity.parentid].completion;
                         if (!activity.deleted) {
-                            if ((parentcompletion == 1) && (activity.completion == 0)) {
-                                buttonstate = "up";
+                            if (activity.cfclass == "cf-next") {
                                 nextsuggested = nextsuggested == 0 ? 1 : 2;
-                                text.addClass("ready");
-                            } else if (activity.completion == 1) {
-                                full.light += (100 - full.light) * 0.35;
-                                full.sat = full.sat * 0.75;
-                                buttonstate = "half";
-                                text.addClass("available");
-                            } else if (activity.completion == 0) {
-                                full.light += (100 - full.light) * 0.3;
-                                full.light = Math.max(full.light, 90);
-                                full.sat = Math.min(20, full.sat * 0.8);
-                                buttonstate = "down";
-                                text.addClass("notavailable");
-                            } else { // Hidden activity.
-                                full.sat = 10;
-                                full.light = 98;
-                                buttonstate = "down";
-                                text.addClass("notvisible");
                             }
-                            hexit(canvas, buttonstate, full, copy, nextsuggested);
+                            hexit(canvas, copy, nextsuggested);
                         }
-                        const nowsuggested = nextsuggested;
                         nextsuggested = nextsuggested > 0 ? 2 : 0;
 
                         // Now the link & text.
-                        let whitemaybe = (full.light < 65) ? "white" : "black";
-                        let textcolour = copy ? "black" : whitemaybe;
+                        let textcolour = copy ? "black" : "white";
                         text.css("color", textcolour);
-                        if (((flow.role == 0) || (buttonstate != "down")) && (!activity.deleted)) {
-                            // Second option alternative: ((activity.completion >= 0) && (parentcompletion == 1))) {
-                            mid.css("cursor", "pointer")
-                                .on("mousedown touchstart", function(e) {
-                                    e.preventDefault();
-                                    hexclicked = id;
-                                    hexit(canvas, "down", full, copy, nowsuggested);
-                                    e.currentTarget.addEventListener("mouseleave", function() {
-                                        hexclicked = 0;
-                                        hexit(canvas, buttonstate, full, copy, nowsuggested);
-                                    }, {once: true});
-                                    e.currentTarget.addEventListener("touchmove", function() {
-                                        hexclicked = 0;
-                                        hexit(canvas, buttonstate, full, copy, nowsuggested);
-                                    }, {once: true});
-                                })
-                                .on("click touchend mouseup", function() {
-                                    if (hexclicked != id) {
-                                        hexclicked = 0;
-                                        return;
-                                    }
-                                    hexit(canvas, buttonstate, full, copy, nowsuggested);
-                                    location.href = activity.link;
-                                });
-                        } else if (activity.completion == -1) {
-                            mid.css("cursor", "not-allowed");
-                            text.css("cursor", "not-allowed");
-                        } else {
-                            mid.css("cursor", "default");
-                            text.css("cursor", "default");
-                        }
 
                         /** Draw the shape on the canvas.
                          * @param {object} ctx canvas
-                         * @param {string} state whether the button is up, down, or in the middle
-                         * @param {object} shapefill colour given in HSL.
                          * @param {number} copy the version of the hex, if 0 then original else not.
                          * @param {boolean} suggested if this hex has been suggested as the next activity.
                         */
-                        function hexit(ctx, state, shapefill, copy, suggested) {
+                        function hexit(ctx, copy, suggested) {
                             ctx.clearRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
                             if (suggested == 1) {
                                 // Then this is the suggested next activity.  Add corona.
@@ -386,67 +335,7 @@ define(['jquery'],
                                 ctx.fillStyle = grd;
                                 ctx.fillRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
                             }
-                            const statenotdownsize = state == "up" ? 0 : flow.size.basebtn / 2;
-                            const buttonheight = state == "down" ? flow.size.basebtn : statenotdownsize;
-                            if (copy) {
-                                ctx.setLineDash([4, 2]);
-                                ctx.strokeStyle = "black";
-                            } else {
-                                ctx.setLineDash([]);
-                                drawpointer();
-                                ctx.strokeStyle = `hsl(${shapefill.hue},${shapefill.sat}%,${shapefill.light * 0.8}%)`;
-                            }
-                            ctx.lineWidth = 1;
-                            ctx.beginPath();
-                            ctx.moveTo(flow.size.x0, flow.size.y1 + buttonheight);
-                            ctx.lineTo(flow.size.x1, flow.size.shapemargin + buttonheight);
-                            ctx.lineTo(flow.size.x2, flow.size.shapemargin + buttonheight);
-                            ctx.lineTo(flow.size.x3, flow.size.y1 + buttonheight);
-                            ctx.lineTo(flow.size.x2, flow.size.y2 + buttonheight);
-                            ctx.lineTo(flow.size.x1, flow.size.y2 + buttonheight);
-                            ctx.closePath();
-                            ctx.stroke();
-                            ctx.fillStyle = copy ? "white" : `hsl(${shapefill.hue},${shapefill.sat}%,${shapefill.light}%)`;
-                            ctx.fill();
-                            if (state != "down") {
-                                // Draw button sides.
-                                const topbtn = buttonheight + ctx.lineWidth;
-                                const botbtn = flow.size.basebtn;
-                                let toner1 = Math.min(90, shapefill.light + (100 - shapefill.light) * 0.3);
-                                let toner2 = shapefill.sat * 0.5;
-                                ctx.fillStyle = copy ? "white" : `hsl(${shapefill.hue},${toner2}%,${toner1}%)`;
-                                toner1 += (100 - toner1) * 0.6;
-                                ctx.strokeStyle = copy ? "black" : `hsl(${shapefill.hue},${toner2}%,${toner1}%)`;
-
-                                ctx.beginPath();
-                                ctx.moveTo(flow.size.x0, flow.size.y1 + topbtn);
-                                ctx.lineTo(flow.size.x0, flow.size.y1 + botbtn);
-                                ctx.lineTo(flow.size.x1, flow.size.y2 + botbtn);
-                                ctx.lineTo(flow.size.x1, flow.size.y2 + topbtn);
-                                ctx.closePath();
-                                ctx.stroke();
-                                ctx.fill();
-                                if (!copy) {
-                                    ctx.fillRect( // X, y, width, height.
-                                        flow.size.x1, flow.size.y2 + topbtn,
-                                        flow.size.x2 - flow.size.x1, botbtn - topbtn);
-                                }
-                                ctx.beginPath();
-                                ctx.moveTo(flow.size.x1, flow.size.y2 + botbtn);
-                                ctx.lineTo(flow.size.x2, flow.size.y2 + botbtn);
-                                ctx.stroke();
-                                ctx.beginPath();
-                                ctx.moveTo(flow.size.x2, flow.size.y2 + topbtn);
-                                ctx.lineTo(flow.size.x2, flow.size.y2 + botbtn);
-                                ctx.lineTo(flow.size.x3, flow.size.y1 + botbtn);
-                                ctx.lineTo(flow.size.x3, flow.size.y1 + topbtn);
-                                ctx.closePath();
-                                ctx.stroke();
-                                ctx.fill();
-                            }
-                            /** Add the pointers into the hex.
-                            */
-                            function drawpointer() {
+                            if (!copy) {
                                 if (activity.parentid == 0) {
                                     return;
                                 }
@@ -488,71 +377,10 @@ define(['jquery'],
                                 ctx.closePath();
                                 ctx.fill();
                                 ctx.restore();
-                                // Ctx.arc(arrowpointX, arrowpointY, flow.size.shapemargin / 2, 0, 2 * Math.PI);
                             }
                         }
                     }
                 }
-                /** Convert hex to HSL.
-                 * Copied from https://css-tricks.com/converting-color-spaces-in-javascript/
-                 * @param {string} H hex colour
-                 * @return {object} HSL colour
-                */
-                function toHSL(H) {
-                    // Convert hex to RGB first
-                    let r = 0,
-                        g = 0,
-                        b = 0;
-                    if (H.length == 4) {
-                        r = "0x" + H[1] + H[1];
-                        g = "0x" + H[2] + H[2];
-                        b = "0x" + H[3] + H[3];
-                    } else if (H.length == 7) {
-                        r = "0x" + H[1] + H[2];
-                        g = "0x" + H[3] + H[4];
-                        b = "0x" + H[5] + H[6];
-                    }
-                    // Then to HSL. First make r, g, and b fractions of 1
-                    r /= 255;
-                    g /= 255;
-                    b /= 255;
-
-                    // Find greatest and smallest channel values
-                    let cmin = Math.min(r, g, b),
-                        cmax = Math.max(r, g, b),
-                        delta = cmax - cmin,
-                        h = 0,
-                        s = 0,
-                        l = 0;
-                    // Calculate hue
-                    if (delta == 0) { // No difference
-                        h = 0;
-                    } else if (cmax == r) { // Red is max
-                        h = ((g - b) / delta) % 6;
-                    } else if (cmax == g) { // Green is max
-                        h = (b - r) / delta + 2;
-                    } else { // Blue is max
-                        h = (r - g) / delta + 4;
-                    }
-                    h = Math.round(h * 60);
-
-                    // Make negative hues positive behind 360°
-                    if (h < 0) {
-                        h += 360;
-                    }
-                    // Calculate lightness
-                    l = (cmax + cmin) / 2;
-
-                    // Calculate saturation
-                    s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
-
-                    // Multiply l and s by 100
-                    s = +(s * 100).toFixed(1);
-                    l = +(l * 100).toFixed(1);
-
-                    return {"hue": h, "sat": s, "light": l};
-                }
-
             }
         };
     }

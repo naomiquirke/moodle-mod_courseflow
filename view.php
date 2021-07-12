@@ -100,19 +100,42 @@ if ($flowform->is_cancelled()) {
     $flowdata = json_decode($fromform->flow);
     if (is_object($flowdata)) {
         // If not then something has gone wrong, just take as if cancelled.
-        $tree = new stdClass;
+        // Sort parent tree by preferred.
+        $tree = [];
         // Build up parent tree.
         foreach ($flowdata as $step => $stepdata) {
             $thisparentid = $stepdata->parentid;
             if (empty($thisparentid)) {
+                if (!isset($tree[$stepdata->id])) {
+                    $tree[$stepdata->id] = (object)[
+                        'id' => $stepdata->id,
+                        'preferred' => $stepdata->preferred,
+                        'children' => []
+                    ];
+                }
                 continue;
             }
-            if (empty($tree->$thisparentid)) {
-                $tree->$thisparentid = [];
+            if (!isset($tree[$thisparentid])) {
+                $tree[$thisparentid] = (object)[
+                    'id' => $thisparentid,
+                    'preferred' => $flowdata->{$thisparentid}->preferred,
+                    'children' => []
+                ];
             }
-            $tree->{$thisparentid}[] = $step;
+            $tree[$thisparentid]->children[] = (object)['id' => $step, 'preferred' => $stepdata->preferred];
         }
-        $flowsaved->flow = "{\"steps\":" . $fromform->flow . ",\"tree\":" . json_encode($tree) . "}";
+
+        function blahblah($x, $y) {
+            return $x->preferred - $y->preferred;
+        }
+        usort($tree, 'blahblah');
+        foreach ($tree as &$thisparent) {
+            usort($thisparent->children, 'blahblah');
+        }
+//    error_log("\r\n" . time() . "******tree*****" . "\r\n" . print_r($tree, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
+
+        $flowsaved->flow = "{\"steps\":" . $fromform->flow
+            . ",\"tree\":" . json_encode($tree)  . "}";
         $DB->update_record('courseflow', $flowsaved);
 
         // Now update visibility in course module record, based on changes to other module visibility in courseflow edit form.
@@ -150,25 +173,6 @@ if ($flowform->is_cancelled()) {
 } else {
     $formrenderer = $PAGE->get_renderer('mod_courseflow');
     $formrenderer->render_form_header();
-    $PAGE->requires->strings_for_js([
-        'flowformactivity',
-        'flowformactivityhelp',
-        'flowformalert',
-        'flowformcolour',
-        'flowformcolourhelp',
-        'flowformmove',
-        'flowformmovehelp',
-        'flowformprereq',
-        'flowformprereqhelp',
-        'flowformrestrictions',
-        'flowformrestrictionshelp',
-        'flowformsection',
-        'flowformsectionhelp',
-        'flowformvisible',
-        'flowformvisiblehelp',
-        'flowformvisiblecourse',
-        'flowformvisiblecoursehelp',
-        ], 'courseflow', null);
     $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', []);
     $flowform->display();
     $formrenderer->render_form_footer();

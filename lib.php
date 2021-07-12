@@ -33,25 +33,27 @@ defined('MOODLE_INTERNAL') || die;
 function courseflow_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
-                return MOD_ARCHETYPE_RESOURCE;
+            return MOD_ARCHETYPE_RESOURCE;
         case FEATURE_GROUPS:
-                return true;
+            return true;
         case FEATURE_GROUPINGS:
-                return true;
+            return true;
         case FEATURE_MOD_INTRO:
-                return false;
+            return false;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
-                return false;
+            return false;
         case FEATURE_GRADE_HAS_GRADE:
-                return false;
+            return false;
         case FEATURE_GRADE_OUTCOMES:
-                return false;
+            return false;
         case FEATURE_BACKUP_MOODLE2:
-                return true;
+            return true;
         case FEATURE_SHOW_DESCRIPTION:
-                return false;
+            return false;
+        case FEATURE_NO_VIEW_LINK:
+            return true;
         default:
-                return null;
+            return null;
     }
 };
 /**
@@ -171,18 +173,16 @@ function courseflow_cm_info_view($info) {
         }
     }
     $parents = $outerflow->tree;
-//    error_log("\r\n" . time() . "******flowsteps*****" . "\r\n" . print_r($flowsteps, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
-
-    foreach ($parents as $parentid => $parent) {
-        foreach ($parent as $child) {
-            if ($flowsteps[$child]->completion == 0) {
-                if ($flowsteps[$parentid]->completion == 0) {
-                    $flowsteps[$child]->cfclass = "cf-notavailable";
-                    $flowsteps[$child]->basehex = '../mod/courseflow/pix/basehex_down.svg';
-                    $flowsteps[$child]->link = "#";
+    foreach ($parents as $parent) {
+        foreach ($parent->children as $child) {
+            if ($flowsteps[$child->id]->completion == 0) {
+                if ($flowsteps[$parent->id]->completion == 0) {
+                    $flowsteps[$child->id]->cfclass = "cf-notavailable";
+                    $flowsteps[$child->id]->basehex = '../mod/courseflow/pix/basehex_down.svg';
+                    $flowsteps[$child->id]->link = "#";
                 } else {
-                    $flowsteps[$child]->cfclass = "cf-next";
-                    $flowsteps[$child]->basehex = '../mod/courseflow/pix/basehex_up.svg';
+                    $flowsteps[$child->id]->cfclass = "cf-next";
+                    $flowsteps[$child->id]->basehex = '../mod/courseflow/pix/basehex_up.svg';
                 }
             }
         }
