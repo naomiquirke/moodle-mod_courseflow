@@ -118,15 +118,13 @@ function courseflow_cm_info_view($info) {
     $context = context_course::instance($COURSE->id);
     $flowsaved = json_decode($stored->flow);
     $outerflow = new stdClass();
-    $outerflow->tree = $flowsaved->tree;
     if (!is_object($flowsaved->steps)) {
         return;
     }
-    if (has_capability('mod/courseflow:addinstance', $context)) {
-        $outerflow->role = 0;
-    } else {
+    $role = 0;
+    if (!has_capability('mod/courseflow:addinstance', $context)) {
         $completion = new completion_info($COURSE);
-        $outerflow->role = 1;
+        $role = 1;
     }
     $outerflow->mod = $info->id;
     $cmods = get_fast_modinfo($COURSE, $USER->id);
@@ -147,7 +145,7 @@ function courseflow_cm_info_view($info) {
         }
 
         if ($cm->uservisible && $cm->visible) {
-            if ($outerflow->role) { // Participant.
+            if ($role) { // Participant.
                 // Have 'true' in following: assume most course activities will be included.
                 $activitycompletion = $completion->get_data($cm, true, $USER->id);
                 if ($activitycompletion->completionstate > 0) {
@@ -167,12 +165,16 @@ function courseflow_cm_info_view($info) {
             $step->completion = -1;
             $step->cfclass = "cf-hidden";
             $step->basehex = '../mod/courseflow/pix/basehex_hidden.svg';
-            if ($outerflow->role) { // Participant.
+            if ($role) { // Participant.
                 $step->link = "#";
             }
         }
     }
-    $parents = $outerflow->tree;
+    $parents = $flowsaved->tree;
+    $flowform = [];
+    foreach ($flowsteps as $anotherstep) {
+        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id, 'preferred' => $anotherstep->preferred, 'parentid' => $anotherstep->parentid];
+    }
     foreach ($parents as $parent) {
         foreach ($parent->children as $child) {
             if ($flowsteps[$child->id]->completion == 0) {
@@ -187,9 +189,8 @@ function courseflow_cm_info_view($info) {
             }
         }
     }
-    $outerflow->flowdata = $flowsteps;
+    $outerflow->flowdata = $flowform; // Send through a cut down version.
     $outerflow->json = json_encode($outerflow);
-
     $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with sparse arrays.
     $renderer = $PAGE->get_renderer('mod_courseflow');
     $rendered = $renderer->render_courseflow($outerflow);

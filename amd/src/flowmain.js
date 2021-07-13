@@ -35,10 +35,6 @@ define(['jquery'],
                 if (coursestream.flowheight == 0) {
                     return;
                 }
-                if (coursestream.role != 0) {
-                    // Hide the link to the activity edit.
-                    $(`li#module-${coursestream.mod} div.activityinstance a`).css("visibility", "hidden");
-                }
 
                 coursestream.container = `div#cf-container-${coursestream.mod}`;
                 $(coursestream.container).on("mousedown", function(e) {
