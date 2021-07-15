@@ -131,12 +131,13 @@ function courseflow_cm_info_view($info) {
     $flowsteps = (array)$flowsaved->steps;
     foreach ($flowsteps as &$step) {
         $cmid = $step->id;
+        $step->deleted = 0;
         try { // If activity has been subsequently deleted after flow being edited.
             $cm = $cmods->get_cm($cmid);
         } catch (\Exception $e) {
             $cmid = 0;
             $step->deleted = 1;
-            $step->link = "#";
+            $step->link = "";
             $step->name = $step->name . " (deleted)";
             $step->completion = -2;
             $step->textclass = "cf-deleted";
@@ -151,7 +152,6 @@ function courseflow_cm_info_view($info) {
                 if ($activitycompletion->completionstate > 0) {
                     $step->completion = 1;
                     $step->cfclass = "cf-available";
-                    $step->basehex = '../mod/courseflow/pix/basehex_up_half.svg';
                 } else {
                     $step->completion = 0;
 
@@ -159,32 +159,36 @@ function courseflow_cm_info_view($info) {
             } else {
                 $step->completion = 1;
                 $step->cfclass = "cf-available";
-                $step->basehex = '../mod/courseflow/pix/basehex_up_half.svg';
             }
         } else {
             $step->completion = -1;
             $step->cfclass = "cf-hidden";
-            $step->basehex = '../mod/courseflow/pix/basehex_hidden.svg';
             if ($role) { // Participant.
-                $step->link = "#";
+                $step->link = "";
             }
         }
     }
     $parents = $flowsaved->tree;
     $flowform = [];
     foreach ($flowsteps as $anotherstep) {
-        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id, 'preferred' => $anotherstep->preferred, 'parentid' => $anotherstep->parentid];
+        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id
+            , 'preferred' => $anotherstep->preferred
+            , 'parentid' => $anotherstep->parentid
+            , 'deleted' => $anotherstep->deleted];
     }
+    $suggested = 1;
     foreach ($parents as $parent) {
         foreach ($parent->children as $child) {
             if ($flowsteps[$child->id]->completion == 0) {
                 if ($flowsteps[$parent->id]->completion == 0) {
                     $flowsteps[$child->id]->cfclass = "cf-notavailable";
-                    $flowsteps[$child->id]->basehex = '../mod/courseflow/pix/basehex_down.svg';
-                    $flowsteps[$child->id]->link = "#";
+                    $flowsteps[$child->id]->link = "";
                 } else {
-                    $flowsteps[$child->id]->cfclass = "cf-next";
-                    $flowsteps[$child->id]->basehex = '../mod/courseflow/pix/basehex_up.svg';
+                    if ($suggested) {
+                        $flowsteps[$child->id]->cfclass = "cf-next cf-suggested";
+                    } else {
+                        $flowsteps[$child->id]->cfclass = "cf-next";
+                    }
                 }
             }
         }
