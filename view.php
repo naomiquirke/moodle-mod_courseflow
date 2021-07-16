@@ -132,7 +132,6 @@ if ($flowform->is_cancelled()) {
         foreach ($tree as &$thisparent) {
             usort($thisparent->children, 'blahblah');
         }
-//    error_log("\r\n" . time() . "******tree*****" . "\r\n" . print_r($tree, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
 
         $flowsaved->flow = "{\"steps\":" . $fromform->flow
             . ",\"tree\":" . json_encode($tree)  . "}";

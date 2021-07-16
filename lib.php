@@ -131,12 +131,13 @@ function courseflow_cm_info_view($info) {
     $flowsteps = (array)$flowsaved->steps;
     foreach ($flowsteps as &$step) {
         $cmid = $step->id;
+        $step->deleted = 0;
         try { // If activity has been subsequently deleted after flow being edited.
             $cm = $cmods->get_cm($cmid);
         } catch (\Exception $e) {
             $cmid = 0;
             $step->deleted = 1;
-            $step->link = "#";
+            $step->link = 0;
             $step->name = $step->name . " (deleted)";
             $step->completion = -2;
             $step->textclass = "cf-deleted";
@@ -151,7 +152,6 @@ function courseflow_cm_info_view($info) {
                 if ($activitycompletion->completionstate > 0) {
                     $step->completion = 1;
                     $step->cfclass = "cf-available";
-                    $step->basehex = '../mod/courseflow/pix/basehex_up_half.svg';
                 } else {
                     $step->completion = 0;
 
@@ -159,40 +159,46 @@ function courseflow_cm_info_view($info) {
             } else {
                 $step->completion = 1;
                 $step->cfclass = "cf-available";
-                $step->basehex = '../mod/courseflow/pix/basehex_up_half.svg';
             }
         } else {
             $step->completion = -1;
             $step->cfclass = "cf-hidden";
-            $step->basehex = '../mod/courseflow/pix/basehex_hidden.svg';
             if ($role) { // Participant.
-                $step->link = "#";
+                $step->link = 0;
             }
         }
     }
     $parents = $flowsaved->tree;
-    $flowform = [];
-    foreach ($flowsteps as $anotherstep) {
-        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id, 'preferred' => $anotherstep->preferred, 'parentid' => $anotherstep->parentid];
-    }
+    $suggested = 1;
     foreach ($parents as $parent) {
         foreach ($parent->children as $child) {
             if ($flowsteps[$child->id]->completion == 0) {
                 if ($flowsteps[$parent->id]->completion == 0) {
                     $flowsteps[$child->id]->cfclass = "cf-notavailable";
-                    $flowsteps[$child->id]->basehex = '../mod/courseflow/pix/basehex_down.svg';
-                    $flowsteps[$child->id]->link = "#";
+                    $flowsteps[$child->id]->link = 0;
                 } else {
-                    $flowsteps[$child->id]->cfclass = "cf-next";
-                    $flowsteps[$child->id]->basehex = '../mod/courseflow/pix/basehex_up.svg';
+                    if ($suggested) {
+                        $flowsteps[$child->id]->cfclass = "cf-next cf-suggested";
+                    } else {
+                        $flowsteps[$child->id]->cfclass = "cf-next";
+                    }
                 }
             }
         }
+    }
+    $flowform = [];
+    foreach ($flowsteps as $anotherstep) {
+        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id
+            , 'preferred' => $anotherstep->preferred
+            , 'parentid' => $anotherstep->parentid
+            , 'deleted' => $anotherstep->deleted];
     }
     $outerflow->flowdata = $flowform; // Send through a cut down version.
     $outerflow->json = json_encode($outerflow);
     $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with sparse arrays.
     $renderer = $PAGE->get_renderer('mod_courseflow');
+//    error_log("\r\n" . time() . "******tree*****" . "\r\n" . print_r($tree, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
+
     $rendered = $renderer->render_courseflow($outerflow);
 
     $info->set_content($rendered, true); // Must have $isformatted=true.

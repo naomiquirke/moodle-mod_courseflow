@@ -24,8 +24,8 @@
 /**
  * @module mod_courseflow/flowmain
  */
-define(['jquery'],
-    function($) {
+define(['jquery', 'core/url'],
+    function($, url) {
         /**
          * @alias module:mod_courseflow/flowmain
          */
@@ -63,10 +63,18 @@ define(['jquery'],
 
                     // Set the size of the containing element based on the number of hex rows that have been used.
                     $(flow.container).css("height", (maxrow + 0.8) * flow.size.stackdown + "px");
-
-                    // Initialise marker for next suggested shape, only one up button can have this.
-                    let nextsuggested = 0;
-                    // Draw the shapes
+                    // Set the size of the divs.
+                    $(`${flow.container} div.cf-outer-hex`).css({
+                        position: "absolute",
+                        width: (flow.size.innersize * 1.1) + "px",
+                    });
+                    $(`${flow.container} div.cf-hex-mid`).css({
+                        height: flow.size.innersize + "px",
+                    });
+                    $(`${flow.container} div.cf-txtholder`).css({
+                        fontSize: flow.size.font,
+                    });
+                    // Place the shapes
                     flow.floworder.forEach(c => {
                         const shapeid = c[0];
                         const placed = flow.flowdata[shapeid].placed;
@@ -74,7 +82,6 @@ define(['jquery'],
                         for (; shapeversion < placed.length; shapeversion++) {
                             const hexplacement = placed[shapeversion];
                             let shapeholder = $(`#cf-outer-hex-${flow.mod}-${shapeid}-${shapeversion}`);
-
                             if (shapeholder.length == 0) {
                                 // This must be drawn from scratch.
                                 shapeholder = $(`#cf-outer-hex-${flow.mod}-${shapeid}-0`).clone(true, true);
@@ -83,19 +90,28 @@ define(['jquery'],
                                     .addClass("cf-clone");
                                 shapeholder.children(".cf-inner-hex")
                                     .attr("id", `cf-inner-hex-${flow.mod}-${shapeid}-${shapeversion}`);
-                                shapeholder.children(".cf-img")
-                                    .attr("id", `cf-img-${flow.mod}-${shapeid}-${shapeversion}`);
                                 shapeholder.children(".cf-hex-mid")
                                     .attr("id", `cf-hex-mid-${flow.mod}-${shapeid}-${shapeversion}`);
                                 shapeholder.find(".cf-hex-txt").attr("id", `cf-hex-txt-${flow.mod}-${shapeid}-${shapeversion}`);
                                 shapeholder.appendTo($(`${flow.container}`));
                             }
-                            drawhex(shapeid, shapeversion);
-/*                            Updatelinks(shapeid, shapeversion);*/
-                            shapeholder.animate({
+                            shapeholder.attr('class').split(/\s+/).forEach(e => {
+                                let place = e.search("arrow");
+                                if (place > 0) {
+                                    let arrowimages = shapeholder.css("background-image");
+                                    let nextimage = url.imageUrl(e.substring(place), 'mod_courseflow');
+                                    if (arrowimages == "none") {
+                                        shapeholder.css("background-image", `url(${nextimage})`);
+                                    } else {
+                                        shapeholder.css("background-image", arrowimages + `, url(${nextimage})`);
+                                    }
+                                }
+                            });
+                            shapeholder.css({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
-                                "top": (hexplacement.y * flow.size.stackdown) + "px"
-                            }, {queue: false});
+                                "top": (hexplacement.y * flow.size.stackdown) + "px",
+                                "zIndex": flow.floworder.length - flow.flowdata[shapeid].preferred
+                            });
                         }
                         // Get rid of unused foldbacks. Continue from prev. shapeversion.
                         let oldouter = $(`#cf-outer-hex-${flow.mod}-${shapeid}-${shapeversion}`);
@@ -150,6 +166,7 @@ define(['jquery'],
                                         flow.flowdata[cp.baseparent.id].placed[cp.baseparent.version].base;
                                 }
                             });
+                            addarrows(cp); // Comparison with parent placing ok here because children are always done after parents.
                         });
                         return realmax;
                     }
@@ -232,16 +249,16 @@ define(['jquery'],
                         let width = $(`li#module-${module}`).css("width");
                         shapeholder.css("width", width); // Set this in case the theme has cut it down due to being empty initially.
                         let hexdata = {};
-                        let font = "inherit";
+                        hexdata.font = "inherit";
                         width = parseInt(width, 10) - 10;
                         if (width < 300) {
                             shapeholder.parent().css("margin-left", 0);
                             hexdata.maxcol = 4;
-                            font = "smaller";
+                            hexdata.font = "xx-small";
                         } else if (width < 500) {
                             shapeholder.parent().css("margin-left", 0);
                             hexdata.maxcol = 5;
-                            font = "smaller";
+                            hexdata.font = "smaller";
                         } else if (width < 750) {
                             hexdata.maxcol = 6;
                         } else if (width < 1000) {
@@ -260,7 +277,6 @@ define(['jquery'],
                         hexdata.y2 = hexdata.innersize - hexdata.basebtn; // Height of shape.
                         hexdata.y1 = hexdata.y2 / 2 + hexdata.shapemargin; // Placement of shape middle y.
                         hexdata.y2 += hexdata.shapemargin; // Placement of shape bottom y.
-                        hexdata.grad = 7 / 4;
                         hexdata.stackdown = hexdata.y1;
                         hexdata.innersizeY = hexdata.innersize + hexdata.shapemargin * 2;
                         hexdata.innersizeX = hexdata.innersize + hexdata.shapemargin * 2;
@@ -268,112 +284,27 @@ define(['jquery'],
                         hexdata.x1 = hexdata.innersize * 2 / 7 + hexdata.shapemargin;
                         hexdata.x0 = 1 + hexdata.shapemargin;
                         hexdata.x3 = hexdata.innersize - 1 + hexdata.shapemargin;
-
-                        $(`${container} div.cf-hex-mid`).css({
-                            height: hexdata.x2 + "px",
-                            width: hexdata.x2 + "px",
-                            top: hexdata.x1 / 2 + "px",
-                            left: hexdata.x1 / 2 + "px",
-                            position: "absolute"
-                        });
-                        $(`${container} div.cf-txtholder`).css({
-                            fontSize: font,
-                        });
-                        // Set the size of the shape images.
-                        const allimages = document.querySelectorAll(`${container} img.cf-img`);
-                        allimages.forEach(element => {
-                            element.width = hexdata.innersizeX;
-                            element.height = hexdata.innersizeY;
-                        });
-                        // Set the size of the canvases containing the corona and arrows.
-                        $(`${container} canvas.cf-inner-hex`).attr({
-                            width: hexdata.innersizeX + "px",
-                            height: hexdata.innersizeY + "px"
-                        });
                         return hexdata;
                     }
 
-                    /** Set up to draw the shape on the canvas, getting the colours etc, and add the link if applicable.
-                     * @param {number} id of activity associated with hex
-                     * @param {number} copy version of hex
+                    /** Set up to add arrow classes.
+                     * @param {object} activity associated with hex
                     */
-                    function drawhex(id, copy) {
-//                        Let heximage = $(`#cf-img-${flow.mod}-${id}-${copy}`);
-                        let canvas = $(`#cf-inner-hex-${flow.mod}-${id}-${copy}`).get(0).getContext('2d');
-                        let text = $(`p#cf-hex-txt-${flow.mod}-${id}-${copy}`);
-                        let activity = flow.flowdata[id];
-                        if (!activity.deleted) {
-                            if (activity.cfclass == "cf-next") {
-                                nextsuggested = nextsuggested == 0 ? 1 : 2;
+                    function addarrows(activity) {
+                        // Arrows.
+                        if (!activity.deleted && activity.parentid != "0") {
+                            var parentplaced;
+                            if (activity.parentid == activity.baseparent.id) {
+                                parentplaced = flow.flowdata[activity.baseparent.id].placed[activity.baseparent.version];
+                            } else {
+                                parentplaced = flow.flowdata[activity.parentid].placed[0];
                             }
-                            hexit(canvas, copy, nextsuggested);
-                        }
-                        nextsuggested = nextsuggested > 0 ? 2 : 0;
-
-                        // Now the link & text.
-                        let textcolour = copy ? "black" : "white";
-                        text.css("color", textcolour);
-
-                        /** Draw the shape on the canvas.
-                         * @param {object} ctx canvas
-                         * @param {number} copy the version of the hex, if 0 then original else not.
-                         * @param {boolean} suggested if this hex has been suggested as the next activity.
-                        */
-                        function hexit(ctx, copy, suggested) {
-                            ctx.clearRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
-                            if (suggested == 1) {
-                                // Then this is the suggested next activity.  Add corona.
-                                let grd = ctx.createRadialGradient(flow.size.innersizeX / 2, flow.size.innersizeY / 2
-                                    , flow.size.innersizeX * 0.4, flow.size.innersizeX / 2, flow.size.innersizeY / 2
-                                    , flow.size.innersizeY / 2);
-                                grd.addColorStop(0, 'rgba(255,215, 0, 0.5)');
-                                grd.addColorStop(1, 'rgba(255, 215, 0, 0)');
-                                ctx.fillStyle = grd;
-                                ctx.fillRect(0, 0, flow.size.innersizeX, flow.size.innersizeY);
-                            }
-                            if (!copy) {
-                                if (activity.parentid == 0) {
-                                    return;
-                                }
-                                var parentplaced;
-                                if (activity.parentid == activity.baseparent.id) {
-                                    parentplaced = flow.flowdata[activity.baseparent.id].placed[activity.baseparent.version];
-                                } else {
-                                    parentplaced = flow.flowdata[activity.parentid].placed[0];
-                                }
-                                const thisplaced = activity.placed[0]; // Want .x and .y properties.
-                                const whenarrownotleftish = (parentplaced.x - thisplaced.x == 0) ? 0 : -1;
-                                const arrowsideways = (parentplaced.x - thisplaced.x > 0) ? 1 : whenarrownotleftish;
-                                const arrowupish = (parentplaced.y - thisplaced.y > 0) ? 1 : -1;
-                                var arrowpointX, arrowpointY, arrowgrad;
-                                if (arrowsideways == 0) {
-                                    arrowpointX = (flow.size.x2 + flow.size.x1) / 2; // (x2-x1)/2 + x1
-                                    arrowpointY = (arrowupish == 1) ? flow.size.y2 + flow.size.basebtn :
-                                        flow.size.shapemargin;
-                                    arrowgrad = (arrowupish == 1) ? Math.PI : 0;
-                                } else if (arrowsideways == 1) {
-                                    arrowpointX = (flow.size.x3 + flow.size.x2) / 2;
-                                    arrowpointY = (arrowupish == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
-                                    arrowpointY += (flow.size.x3 - flow.size.x2) / 2 * flow.size.grad;
-                                    arrowgrad = Math.atan2(1 / 2, -arrowupish * 2 / 7); // Function params (dy, dx).
-                                } else {
-                                    arrowpointX = (flow.size.x1 + flow.size.x0) / 2;
-                                    arrowpointY = (arrowupish == 1) ? flow.size.y1 + flow.size.basebtn : flow.size.shapemargin;
-                                    arrowpointY += (flow.size.x1 - flow.size.x0) / 2 * flow.size.grad;
-                                    arrowgrad = Math.atan2(-1 / 2, -arrowupish * 2 / 7);
-                                }
-                                ctx.save();
-                                ctx.translate(arrowpointX, arrowpointY);
-                                ctx.rotate(arrowgrad);
-                                ctx.fillStyle = "silver";
-                                ctx.beginPath();
-                                ctx.moveTo(0, 0); // The point.
-                                ctx.lineTo(-flow.size.shapemargin / 2, -flow.size.shapemargin);
-                                ctx.lineTo(flow.size.shapemargin / 2, -flow.size.shapemargin);
-                                ctx.closePath();
-                                ctx.fill();
-                                ctx.restore();
-                            }
+                            const thisplaced = activity.placed[0]; // Want .x and .y properties.
+                            const arrownotvert = (parentplaced.x - thisplaced.x == 0) ? 0 : 1;
+                            const arrowsideways = (parentplaced.x - thisplaced.x > 0) ? -1 : arrownotvert;
+                            const arrowupish = (parentplaced.y - thisplaced.y > 0) ? 1 : 0;
+                            let arrowclass = 'cf-arrow-r' + arrowsideways + 'u' + arrowupish;
+                            $(`#cf-outer-hex-${flow.mod}-${activity.parentid}-0`).addClass(arrowclass);
                         }
                     }
                 }
