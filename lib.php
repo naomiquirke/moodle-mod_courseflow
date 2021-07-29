@@ -140,7 +140,7 @@ function courseflow_cm_info_view($info) {
             $step->link = 0;
             $step->name = $step->name . " (deleted)";
             $step->completion = -2;
-            $step->textclass = "cf-deleted";
+            $step->cfclass = "cf-deleted";
             continue;
         }
 
@@ -191,9 +191,10 @@ function courseflow_cm_info_view($info) {
         $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id
             , 'preferred' => $anotherstep->preferred
             , 'parentid' => $anotherstep->parentid
+            , 'colouravail' => $anotherstep->colouravail
             , 'deleted' => $anotherstep->deleted];
     }
-    $outerflow->flowdata = $flowform; // Send through a cut down version.
+    $outerflow->flowdata = $flowform; // Send through a cut down version to javascript.
     $outerflow->json = json_encode($outerflow);
     $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with sparse arrays.
     $renderer = $PAGE->get_renderer('mod_courseflow');
@@ -216,4 +217,42 @@ function courseflow_check_updates_since(cm_info $cm, $from, $filter = array()) {
     return $updates;
     // For students we need to update after every activity completion if included in flow.
     // So eventually necessary to add more here.
+}
+
+/**
+ * Set up info for the hex drawing procedure, if we are using it.
+ * Can't use this because each can have two states deending on state of animation!!!!!!
+ *
+ * @param string $basecolour
+ * @param string $classesassigned
+ * @return stdClass colour set required for drawing the shape, that is, HSL .
+ */
+function gethexinfo($basecolour, $classesassigned) {
+    $basecolour = array($basecolour[0].$basecolour[1], $basecolour[2].$basecolour[3], $basecolour[4].$basecolour[5]);
+    $rgbval = array_map(function($part) {
+        return hexdec($part) / 255;
+    }, $basecolour);
+    $maxval = max($rgbval);
+    $minval = min($rgbval);
+    $l = ($maxval + $minval) / 2;
+    if ($maxval == $minval) {
+        $h = $s = 0;
+    } else {
+        $diff = $maxval - $minval;
+        $s = $l > 0.5 ? $diff / (2 - $maxval - $minval) : $diff / ($maxval + $minval);
+        switch($maxval) {
+            case $rgbval[0]:
+                $h = ($rgbval[1] - $rgbval[2]) / $diff + ($rgbval[1] < $rgbval[2] ? 6 : 0);
+            break;
+            case $rgbval[1]:
+                $h = ($rgbval[2] - $rgbval[0]) / $diff + 2;
+            break;
+            case $rgbval[2]:
+                $h = ($rgbval[0] - $rgbval[1]) / $diff + 4;
+            break;
+        }
+        $h /= 6;
+    }
+    return (object)[$h, $s, $l];
+
 }

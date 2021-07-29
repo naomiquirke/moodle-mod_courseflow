@@ -78,6 +78,10 @@
     display: inline-flex;
 }
 
+.path-mod-courseflow div.cf-outer-hex.cf-next.cf-suggested {
+  background-image: radial-gradient(circle, rgba(255,255,0,0.6) 25%, rgba(255,255,0,0) 75%);
+}
+
 .path-mod-courseflow div[class^=cf-hex-mid] {
     overflow: hidden;
     padding: 5px;
@@ -89,10 +93,10 @@
     height: 100%;
 }
 
-.path-mod-courseflow [class^=cf-hex-].cf-notavail,
+.path-mod-courseflow [class^=cf-hex-].cf-notavailable,
 .path-mod-courseflow [class^=cf-hex-].cf-hidden,
 .path-mod-courseflow [class^=cf-hex-].cf-deleted {
-    cursor: none;
+    cursor: default;
 }
 
 .path-mod-courseflow p.cf-hex-txt {

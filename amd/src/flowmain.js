@@ -61,9 +61,7 @@ define(['jquery'],
                     // Set the size of the containing element based on the number of hex rows that have been used.
                     $(flow.container).css("height", (flow.maxrow + 0.8) * flow.size.stackdown + "px");
 
-                    $(`${flow.container} .cf-outer-hex`).css("position", "absolute");
                     // Initialise marker for next suggested shape, only one up button can have this.
-                    var nextsuggested = 0;
                     // Draw the shapes
                     flow.floworder.forEach(c => {
                         const shape = c[0];
@@ -85,6 +83,7 @@ define(['jquery'],
                                 newholder.appendTo($(`${flow.container}`));
                             }
                             drawhex(shape, index);
+                            newholder.css("position", "absolute");
                             newholder.animate({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
                                 "top": (hexplacement.y * flow.size.stackdown) + "px"
@@ -280,40 +279,38 @@ define(['jquery'],
                     */
                     function drawhex(id, copy) {
                         var buttonstate;
-                        let canvas = $(`canvas#cf-inner-hex-${flow.mod}-${id}-${copy}`);
+                        let canvas = document.getElementById(`cf-inner-hex-${flow.mod}-${id}-${copy}`);
                         let mid = $(`#cf-hex-mid-${flow.mod}-${id}-${copy}`);
                         let text = $(`p#cf-hex-txt-${flow.mod}-${id}-${copy}`);
-                        var ctx = canvas.get(0).getContext('2d');
-
+                        var ctx = canvas.getContext('2d');
+                        let essentialclass = canvas.classList[1];
                         var activity = flow.flowdata[id];
                         let full = toHSL(activity.colouravail);
-                        var parentcompletion = activity.parentid == 0 ? 1 : flow.flowdata[activity.parentid].completion;
-                        if (!activity.deleted) {
-                            if ((parentcompletion == 1) && (activity.completion == 0)) {
-                                buttonstate = "up";
-                                nextsuggested = nextsuggested == 0 ? 1 : 2;
-                                text.addClass("ready");
-                            } else if (activity.completion == 1) {
+                        switch (essentialclass) {
+                            case "cf-available":
                                 full.light += (100 - full.light) * 0.35;
                                 full.sat = full.sat * 0.75;
                                 buttonstate = "half";
-                                text.addClass("available");
-                            } else if (activity.completion == 0) {
+                                break;
+                            case "cf-hidden":
+                                full.sat = 10;
+                                full.light = 98;
+                                buttonstate = "down";
+                                break;
+                            case "cf-notavailable":
                                 full.light += (100 - full.light) * 0.3;
                                 full.light = Math.max(full.light, 90);
                                 full.sat = Math.min(20, full.sat * 0.8);
                                 buttonstate = "down";
-                                text.addClass("notavailable");
-                            } else { // Hidden activity.
-                                full.sat = 10;
-                                full.light = 98;
+                                break;
+                            case "cf-next":
+                                buttonstate = "up";
+                                break;
+                            default:
                                 buttonstate = "down";
-                                text.addClass("notvisible");
-                            }
-                            hexit(buttonstate, full, copy, nextsuggested);
+                                full.light = 100;
                         }
-                        const nowsuggested = nextsuggested;
-                        nextsuggested = nextsuggested > 0 ? 2 : 0;
+                        hexit(buttonstate, full, copy, 0);
 
                         // Now the link & text.
                         let whitemaybe = (full.light < 65) ? "white" : "black";
@@ -325,14 +322,14 @@ define(['jquery'],
                                 .on("mousedown touchstart", function(e) {
                                     e.preventDefault();
                                     flow.hexclicked = id;
-                                    hexit("down", full, copy, nowsuggested);
+                                    hexit("down", full, copy, 0);
                                     e.currentTarget.addEventListener("mouseleave", function() {
                                         flow.hexclicked = 0;
-                                        hexit(buttonstate, full, copy, nowsuggested);
+                                        hexit(buttonstate, full, copy, 0);
                                     }, {once: true});
                                     e.currentTarget.addEventListener("touchmove", function() {
                                         flow.hexclicked = 0;
-                                        hexit(buttonstate, full, copy, nowsuggested);
+                                        hexit(buttonstate, full, copy, 0);
                                     }, {once: true});
                                 })
                                 .on("click touchend mouseup", function() {
@@ -340,15 +337,9 @@ define(['jquery'],
                                         flow.hexclicked = 0;
                                         return;
                                     }
-                                    hexit(buttonstate, full, copy, nowsuggested);
+                                    hexit(buttonstate, full, copy, 0);
                                     location.href = activity.link;
                                 });
-                        } else if (activity.completion == -1) {
-                            mid.css("cursor", "not-allowed");
-                            text.css("cursor", "not-allowed");
-                        } else {
-                            mid.css("cursor", "default");
-                            text.css("cursor", "default");
                         }
 
                         /** Draw the shape on the canvas.
