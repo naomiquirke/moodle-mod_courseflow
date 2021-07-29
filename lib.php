@@ -33,25 +33,27 @@ defined('MOODLE_INTERNAL') || die;
 function courseflow_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
-                return MOD_ARCHETYPE_RESOURCE;
+            return MOD_ARCHETYPE_RESOURCE;
         case FEATURE_GROUPS:
-                return true;
+            return true;
         case FEATURE_GROUPINGS:
-                return true;
+            return true;
         case FEATURE_MOD_INTRO:
-                return false;
+            return false;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
-                return false;
+            return false;
         case FEATURE_GRADE_HAS_GRADE:
-                return false;
+            return false;
         case FEATURE_GRADE_OUTCOMES:
-                return false;
+            return false;
         case FEATURE_BACKUP_MOODLE2:
-                return true;
+            return true;
         case FEATURE_SHOW_DESCRIPTION:
-                return false;
+            return false;
+        case FEATURE_NO_VIEW_LINK:
+            return true;
         default:
-                return null;
+            return null;
     }
 };
 /**
@@ -114,51 +116,89 @@ function courseflow_cm_info_view($info) {
         return;
     }
     $context = context_course::instance($COURSE->id);
+    $flowsaved = json_decode($stored->flow);
     $outerflow = new stdClass();
-    $outerflow->flowdata = json_decode($stored->flow);
-    if (!is_object($outerflow->flowdata)) {
+    if (!is_object($flowsaved->steps)) {
         return;
     }
-    if (has_capability('mod/courseflow:addinstance', $context)) {
-        $outerflow->role = 0;
-    } else {
+    $role = 0;
+    if (!has_capability('mod/courseflow:addinstance', $context)) {
         $completion = new completion_info($COURSE);
-        $outerflow->role = 1;
+        $role = 1;
     }
     $outerflow->mod = $info->id;
-    $flowsteps = $outerflow->flowdata;
     $cmods = get_fast_modinfo($COURSE, $USER->id);
+    $flowsteps = (array)$flowsaved->steps;
     foreach ($flowsteps as &$step) {
         $cmid = $step->id;
+        $step->deleted = 0;
         try { // If activity has been subsequently deleted after flow being edited.
             $cm = $cmods->get_cm($cmid);
         } catch (\Exception $e) {
             $cmid = 0;
             $step->deleted = 1;
-            $step->link = "#";
+            $step->link = 0;
             $step->name = $step->name . " (deleted)";
-            $step->completion = 0;
+            $step->completion = -2;
+            $step->textclass = "cf-deleted";
             continue;
         }
 
         if ($cm->uservisible && $cm->visible) {
-            if ($outerflow->role) {
+            if ($role) { // Participant.
                 // Have 'true' in following: assume most course activities will be included.
                 $activitycompletion = $completion->get_data($cm, true, $USER->id);
-                $step->completion = ($activitycompletion->completionstate > 0) ? 1 : 0;
+                if ($activitycompletion->completionstate > 0) {
+                    $step->completion = 1;
+                    $step->cfclass = "cf-available";
+                } else {
+                    $step->completion = 0;
+
+                }
             } else {
                 $step->completion = 1;
+                $step->cfclass = "cf-available";
             }
         } else {
             $step->completion = -1;
+            $step->cfclass = "cf-hidden";
+            if ($role) { // Participant.
+                $step->link = 0;
+            }
         }
     }
-    $outerflow->flowdata = $flowsteps;
+    $parents = $flowsaved->tree;
+    $suggested = 1;
+    foreach ($parents as $parent) {
+        foreach ($parent->children as $child) {
+            if ($flowsteps[$child->id]->completion == 0) {
+                if ($parent->id != "0" && $flowsteps[$parent->id]->completion == 0) {
+                    $flowsteps[$child->id]->cfclass = "cf-notavailable";
+                    $flowsteps[$child->id]->link = 0;
+                } else {
+                    if ($suggested) {
+                        $flowsteps[$child->id]->cfclass = "cf-next cf-suggested";
+                        $suggested = 0;
+                    } else {
+                        $flowsteps[$child->id]->cfclass = "cf-next";
+                    }
+                }
+            }
+        }
+    }
+    $flowform = [];
+    foreach ($flowsteps as $anotherstep) {
+        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id
+            , 'preferred' => $anotherstep->preferred
+            , 'parentid' => $anotherstep->parentid
+            , 'deleted' => $anotherstep->deleted];
+    }
+    $outerflow->flowdata = $flowform; // Send through a cut down version.
     $outerflow->json = json_encode($outerflow);
-    $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with parameters in arrays.
+    $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with sparse arrays.
     $renderer = $PAGE->get_renderer('mod_courseflow');
+//    error_log("\r\n" . time() . "******tree*****" . "\r\n" . print_r($tree, true), 3, "d:\moodle_server\server\myroot\mylogs\myerrors.log");
     $rendered = $renderer->render_courseflow($outerflow);
-
     $info->set_content($rendered, true); // Must have $isformatted=true.
 }
 

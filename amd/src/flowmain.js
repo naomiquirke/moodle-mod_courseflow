@@ -31,53 +31,41 @@ define(['jquery'],
          */
 
         return {
-            init: function(flow) {
-                if (flow.flowheight == 0) {
-                    return;
-                }
-                if (flow.role != 0) {
-                    // Hide the link to the activity edit.
-                    $(`li#module-${flow.mod} div.activityinstance a`).css("visibility", "hidden");
-                }
+            init: function(coursestream) {
+                coursestream.container = `div#cf-container-${coursestream.mod}`;
+                $(coursestream.container).on("mousedown", function(e) {
+                    e.preventDefault();
+                });
+                coursestream.floworder = Object.entries(coursestream.flowdata).sort(
+                    (a, b) => {
+                        return a[1].preferred - b[1].preferred;
+                    });
+
 
                 window.addEventListener("resize", function() {
-                    drawShapes(flow);
+                    drawShapes(coursestream);
                 });
                 window.addEventListener("orientationchange", function() {
-                    drawShapes(flow);
+                    drawShapes(coursestream);
                 });
-                var hexclicked = 0;
-                drawShapes(flow);
+                coursestream.hexclicked = 0;
+                drawShapes(coursestream);
 
                 /** Once we have the sizing, work out the flow.placing and then draw the shapes.
                  * @param {object} flow - All the details of this hex flow.
                 */
                 function drawShapes(flow) {
-                    flow.container = `div#cf-container-${flow.mod}`;
-                    $(flow.container).on("mousedown", function(e) {
-                        e.preventDefault();
-                    });
-                    flow.floworder = Object.entries(flow.flowdata).sort(
-                        (a, b) => {
-                            return a[1].preferred - b[1].preferred;
-                        });
-
                     flow.size = setSizes();
-                    let maxrow = placelist();
+                    placelist();
 
                     // Set the size of the containing element based on the number of hex rows that have been used.
-                    $(flow.container).css("height", (maxrow + 0.8) * flow.size.stackdown + "px");
+                    $(flow.container).css("height", (flow.maxrow + 0.8) * flow.size.stackdown + "px");
 
-                    // Set the size of the canvases containing the shapes.
-                    $(`${flow.container} canvas.cf-inner-hex`).attr({
-                        width: flow.size.innersizeX + "px",
-                        height: flow.size.innersizeY + "px"
-                    });
                     $(`${flow.container} .cf-outer-hex`).css("position", "absolute");
                     // Initialise marker for next suggested shape, only one up button can have this.
                     var nextsuggested = 0;
                     // Draw the shapes
-                    for (const c of flow.floworder) {
+                    flow.floworder.forEach(c => {
                         const shape = c[0];
                         const placed = flow.flowdata[shape].placed;
                         var index;
@@ -109,13 +97,11 @@ define(['jquery'],
                             index++;
                             oldouter = $(`#cf-outer-hex-${flow.mod}-${shape}-${index}`);
                         }
-                    }
-                /** Get relative placements.
-                 * @returns {number} realmax = number of lines.
-                */
+                    });
+                    /** Get relative placements.
+                    */
                     function placelist() {
-                        // Let maxfoldback = 0;
-                        for (let c of flow.floworder) {
+                        flow.floworder.forEach(c => {
                             let cp = flow.flowdata[c[0]];
                             cp.placed = [];
                             if (cp.parentid == 0) {
@@ -138,23 +124,22 @@ define(['jquery'],
                                     // Maxfoldback = Math.max(version, maxfoldback);
                                 }
                             }
-                        }
+                        });
                         // Update to actual placements.
-                        let realmax = 0;
-                        for (let c of flow.floworder) {
+                        flow.maxrow = 0;
+                        flow.floworder.forEach(c => {
                             let cp = flow.flowdata[c[0]];
-                            for (let cpversion of cp.placed) {
+                            cp.placed.forEach((cpversion, index) => {
                                 if (cpversion.rw) {
-                                    cpversion.base = realmax - cpversion.minusy;
-                                    cpversion.y = cpversion.ry + cpversion.base;
-                                    realmax += cpversion.plusy - cpversion.minusy + 2;
+                                    cp.placed[index].base = flow.maxrow - cpversion.minusy;
+                                    cp.placed[index].y = cpversion.ry + cp.placed[index].base;
+                                    flow.maxrow += cpversion.plusy - cpversion.minusy + 2;
                                 } else {
-                                    cpversion.y = cpversion.ry +
+                                    cp.placed[index].y = cpversion.ry +
                                         flow.flowdata[cp.baseparent.id].placed[cp.baseparent.version].base;
                                 }
-                            }
-                        }
-                        return realmax;
+                            });
+                        });
                     }
                     /** Set up a position.
                      * @param {object} cp1
@@ -280,6 +265,12 @@ define(['jquery'],
                         $(`${flow.container} div.cf-txtholder`).css({
                             fontSize: font,
                         });
+                        // Set the size of the canvases containing the shapes.
+                        $(`${flow.container} canvas.cf-inner-hex`).attr({
+                            width: hexdata.innersizeX + "px",
+                            height: hexdata.innersizeY + "px"
+                        });
+
                         return hexdata;
                     }
 
@@ -289,7 +280,7 @@ define(['jquery'],
                     */
                     function drawhex(id, copy) {
                         var buttonstate;
-                        let canvas = $(`#cf-inner-hex-${flow.mod}-${id}-${copy}`);
+                        let canvas = $(`canvas#cf-inner-hex-${flow.mod}-${id}-${copy}`);
                         let mid = $(`#cf-hex-mid-${flow.mod}-${id}-${copy}`);
                         let text = $(`p#cf-hex-txt-${flow.mod}-${id}-${copy}`);
                         var ctx = canvas.get(0).getContext('2d');
@@ -333,20 +324,20 @@ define(['jquery'],
                             mid.css("cursor", "pointer")
                                 .on("mousedown touchstart", function(e) {
                                     e.preventDefault();
-                                    hexclicked = id;
+                                    flow.hexclicked = id;
                                     hexit("down", full, copy, nowsuggested);
                                     e.currentTarget.addEventListener("mouseleave", function() {
-                                        hexclicked = 0;
+                                        flow.hexclicked = 0;
                                         hexit(buttonstate, full, copy, nowsuggested);
                                     }, {once: true});
                                     e.currentTarget.addEventListener("touchmove", function() {
-                                        hexclicked = 0;
+                                        flow.hexclicked = 0;
                                         hexit(buttonstate, full, copy, nowsuggested);
                                     }, {once: true});
                                 })
                                 .on("click touchend mouseup", function() {
-                                    if (hexclicked != id) {
-                                        hexclicked = 0;
+                                    if (flow.hexclicked != id) {
+                                        flow.hexclicked = 0;
                                         return;
                                     }
                                     hexit(buttonstate, full, copy, nowsuggested);

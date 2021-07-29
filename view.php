@@ -39,6 +39,14 @@ $PAGE->set_title($title);
 global $DB, $CFG;
 $adminconfig = get_config('mod_courseflow');
 
+$flowsaved = $DB->get_record('courseflow', ['id' => $cm->instance]);
+if (empty($flowsaved->flow)) {
+    $flowsteps = null;
+} else {
+    $flow = json_decode($flowsaved->flow, true); // True option converts to associative array.
+    $flowsteps = $flow["steps"];
+}
+
 // Create mods info array.
 $mi = get_fast_modinfo($course);
 $cms = array_filter($mi->get_cms(),
@@ -50,8 +58,6 @@ $cms = array_filter($mi->get_cms(),
     }
 );
 
-$flowsaved = $DB->get_record('courseflow', ['id' => $cm->instance]);
-$flowsteps = json_decode($flowsaved->flow, true); // True option converts to associative array.
 $activitylist = ["0" => get_string('selectactivity', 'courseflow')];
 $cminfo = [];
 foreach ($cms as $cm) {
@@ -92,12 +98,43 @@ $flowform = new mod_courseflow_activityflow($url, ['activitylist' => $activityli
 if ($flowform->is_cancelled()) {
     redirect(new moodle_url('/course/view.php', array('id' => $course->id), "module-".$cmid ));
 } else if (($fromform = $flowform->get_data())) {
-    $flowsaved->flow = $fromform->flow;
-    $DB->update_record('courseflow', $flowsaved);
-
-    // Now update visibility in course module record.
     $flowdata = json_decode($fromform->flow);
     if (is_object($flowdata)) {
+        // If not then something has gone wrong, just take as if cancelled.
+        $tree = [];
+        // Build up parent tree.
+        foreach ($flowdata as $step => $stepdata) {
+            $thisparentid = $stepdata->parentid;
+            if (!isset($tree[$stepdata->id])) {
+                $tree[$stepdata->id] = (object)[
+                    'id' => $stepdata->id,
+                    'preferred' => $stepdata->preferred,
+                    'children' => []
+                ];
+            }
+            if (!isset($tree[$thisparentid])) {
+                $tree[$thisparentid] = (object)[
+                    'id' => $thisparentid,
+                    'preferred' => $thisparentid == "0" ? 0 : $flowdata->{$thisparentid}->preferred,
+                    'children' => []
+                ];
+            }
+            $tree[$thisparentid]->children[] = (object)['id' => $step, 'preferred' => $stepdata->preferred];
+        }
+        // Sort parent tree by preferred.
+        function sortparenttree($x, $y) {
+            return $x->preferred - $y->preferred;
+        }
+        usort($tree, 'sortparenttree');
+        foreach ($tree as &$thisparent) {
+            usort($thisparent->children, 'sortparenttree');
+        }
+
+        $flowsaved->flow = "{\"steps\":" . $fromform->flow
+            . ",\"tree\":" . json_encode($tree)  . "}";
+        $DB->update_record('courseflow', $flowsaved);
+
+        // Now update visibility in course module record, based on changes to other module visibility in courseflow edit form.
         // Get refreshed cache in case something has changed while working on form, but use own structure.
         $newcminfo = get_fast_modinfo($course);
         foreach ($flowdata as $activity) {
@@ -126,31 +163,12 @@ if ($flowform->is_cancelled()) {
                 }
             }
         }
+        rebuild_course_cache($course->id, true);
     }
-    rebuild_course_cache($course->id, true);
     redirect(new moodle_url('/course/view.php', array('id' => $course->id), "module-".$cmid));
 } else {
     $formrenderer = $PAGE->get_renderer('mod_courseflow');
     $formrenderer->render_form_header();
-    $PAGE->requires->strings_for_js([
-        'flowformactivity',
-        'flowformactivityhelp',
-        'flowformalert',
-        'flowformcolour',
-        'flowformcolourhelp',
-        'flowformmove',
-        'flowformmovehelp',
-        'flowformprereq',
-        'flowformprereqhelp',
-        'flowformrestrictions',
-        'flowformrestrictionshelp',
-        'flowformsection',
-        'flowformsectionhelp',
-        'flowformvisible',
-        'flowformvisiblehelp',
-        'flowformvisiblecourse',
-        'flowformvisiblecoursehelp',
-        ], 'courseflow', null);
     $PAGE->requires->js_call_amd('mod_courseflow/flowform', 'init', []);
     $flowform->display();
     $formrenderer->render_form_footer();

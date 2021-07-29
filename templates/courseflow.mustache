@@ -35,9 +35,11 @@
     <div id="cf-outer-hex-{{mod}}-{{id}}-0" class="cf-outer-hex {{cf-class}}">
         <canvas id="cf-inner-hex-{{mod}}-{{id}}-0" class="cf-inner-hex {{cf-class}}"></canvas>
         <div id="cf-hex-mid-{{mod}}-{{id}}-0" class="cf-hex-mid {{cf-class}}">
+            {{#link}}<a href="{{link}}">{{/link}}
             <div class="cf-txtholder">
                 <p id="cf-hex-txt-{{mod}}-{{id}}-0" class="cf-hex-txt {{cf-class}}">{{name}}</p>
             </div>
+            {{#link}}</a>{{/link}}
         </div>
     </div>
 {{/flowdata}}

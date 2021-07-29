@@ -75,11 +75,7 @@
 
 .path-mod-courseflow.cf-container {
     width: 100%;
-    position: relative;
-}
-
-.path-mod-courseflow canvas {
-    position: absolute;
+    display: inline-flex;
 }
 
 .path-mod-courseflow div[class^=cf-hex-mid] {
@@ -93,16 +89,18 @@
     height: 100%;
 }
 
-.path-mod-courseflow div[class^=cf-hex-].cf-notavail {
+.path-mod-courseflow [class^=cf-hex-].cf-notavail,
+.path-mod-courseflow [class^=cf-hex-].cf-hidden,
+.path-mod-courseflow [class^=cf-hex-].cf-deleted {
     cursor: none;
 }
 
-.path-mod-courseflow p[id^=cf-hex-txt-].cf-hex-txt {
+.path-mod-courseflow p.cf-hex-txt {
     margin: auto !important;
     text-align: center !important;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 576px) {
     .path-mod-courseflow p[id^=cf-hex-txt-].cf-hex-txt {
         line-height: 1rem;
     }

@@ -25,12 +25,11 @@
 /**
  * @module mod_courseflow/flowform
  */
-define(['jquery'],
-    function($) {
+define(['jquery', 'core/str'],
+    function($, str) {
         /**
          * @alias module:mod_courseflow/flowform
          */
-
         return {
             init: function() {
                 // Set up display and get information about activities and current flows.
@@ -81,13 +80,13 @@ define(['jquery'],
                 // When an activity is selected, its properties are updated, it's added to the flow display, and selectors added.
                 activityselector.change(function() {
                     var activityselected = $("#id_activityselector option:selected");
-                    var flower = activityselected.val();
-                    if (flower == 0) {
+                    var stepstone = activityselected.val();
+                    if (stepstone == 0) {
                         return;
                     }
-                    updaterecord(flower);
+                    updaterecord(stepstone);
                     // Move chosen from activity to parent selector.
-                    addline(flower, activityinfo[flower].name);
+                    addline(stepstone, activityinfo[stepstone].name);
                     // We only want options added afterwards to have access to this as a parent.
                     activityselected.appendTo($("#id_parentselector"));
                     // Update flow.
@@ -129,11 +128,15 @@ define(['jquery'],
                   * @return {string}
                 */
                 function addheader(sizestyle, name) {
-                    const headname = M.util.get_string(name, 'mod_courseflow');
-                    const helpname = M.util.get_string(name + 'help', 'mod_courseflow');
-                    return $(`<div data-toggle="tooltip"
-                        title = "${helpname}"
-                        class = "${sizestyle} headerhelp">${headname}</div>`);
+                    const headname = str.get_string(name, 'mod_courseflow');
+                    const helpname = str.get_string(name + 'help', 'mod_courseflow');
+                    $.when(helpname).done(function(localised) {
+                        $(`div#${name}`).attr("title", localised);
+                    });
+                    $.when(headname).done(function(localised) {
+                        $(`div#${name}`).text(localised);
+                    });
+                    return $(`<div id=${name} data-toggle="tooltip" title = "" class = "${sizestyle} headerhelp"></div>`);
                 }
 
                 /** Add a line on to the flow display. If it is the first, add the column headers.
@@ -368,4 +371,3 @@ define(['jquery'],
         };
     }
 );
-
