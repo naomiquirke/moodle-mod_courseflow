@@ -64,8 +64,8 @@ define(['jquery'],
                     // Initialise marker for next suggested shape, only one up button can have this.
                     // Draw the shapes
                     flow.floworder.forEach(c => {
-                        const shape = c[0];
-                        const placed = flow.flowdata[shape].placed;
+                        const shape = c[1].modid;
+                        const placed = flow.flowdata[c[0]].placed;
                         var index;
                         for (index = 0; index < placed.length; index++) {
                             const hexplacement = placed[index];
@@ -80,7 +80,7 @@ define(['jquery'],
                                 newholder.children(".cf-inner-hex").attr("id", `cf-inner-hex-${flow.mod}-${shape}-${index}`);
                                 newholder.appendTo($(`${flow.container}`));
                             }
-                            drawhex(shape, index, newholder);
+                            drawhex(c[0], index, newholder);
                             newholder.css("position", "absolute");
                             newholder.animate({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
@@ -110,15 +110,14 @@ define(['jquery'],
                                 for (let i = 0; i < flow.size.maxcol; i++) {
                                     cp.placed[0].placing[i] = [];
                                 }
-                                cp.placed[0].placing[1][0] = cp.id;
-                                cp.baseparent = {id: cp.id, version: 0};
+                                cp.placed[0].placing[1][0] = c[0];
+                                cp.baseparent = {identity: c[0], version: 0};
                             } else {
                                 let success = 0;
                                 let version = -1;
                                 while (!success) {
                                     version++;
                                     success = createplace(cp, version);
-                                    // Maxfoldback = Math.max(version, maxfoldback);
                                 }
                             }
                         });
@@ -133,7 +132,7 @@ define(['jquery'],
                                     flow.maxrow += cpversion.plusy - cpversion.minusy + 2;
                                 } else {
                                     cp.placed[index].y = cpversion.ry +
-                                        flow.flowdata[cp.baseparent.id].placed[cp.baseparent.version].base;
+                                        flow.flowdata[cp.baseparent.identity].placed[cp.baseparent.version].base;
                                 }
                             });
                         });
@@ -145,13 +144,13 @@ define(['jquery'],
                     */
                     function createplace(cp1, foldback) {
                         let pp = flow.flowdata[cp1.parentid];
-                        cp1.baseparent = (foldback == 0) ? pp.baseparent : {id: pp.id, version: foldback};
-                        let bp = flow.flowdata[cp1.baseparent.id];
+                        cp1.baseparent = (foldback == 0) ? pp.baseparent : {identity: pp.preferred, version: foldback};
+                        let bp = flow.flowdata[cp1.baseparent.identity];
                         let baseplacements = bp.placed[cp1.baseparent.version];
                         let gotit = getplace(pp.placed[foldback].x, pp.placed[foldback].ry, baseplacements.placing);
                         if (gotit) {
                             cp1.placed[0] = {x: gotit[0], ry: gotit[1], rw: 0};
-                            baseplacements.placing[gotit[0]][gotit[1]] = cp1.id;
+                            baseplacements.placing[gotit[0]][gotit[1]] = cp1.preferred;
                             baseplacements.rw = Math.max(cp1.placed[0].x, baseplacements.rw);
                             baseplacements.minusy = Math.min(cp1.placed[0].ry, baseplacements.minusy);
                             baseplacements.plusy = Math.max(cp1.placed[0].ry, baseplacements.plusy);
@@ -167,7 +166,7 @@ define(['jquery'],
                                 for (let i = 0; i < flow.size.maxcol; i++) {
                                     pp.placed[foldback + 1].placing[i] = [];
                                 }
-                                pp.placed[foldback + 1].placing[1][0] = pp.id;
+                                pp.placed[foldback + 1].placing[1][0] = pp.preferred;
 
                             }
                             return false;
@@ -271,19 +270,19 @@ define(['jquery'],
                     }
 
                     /** Set up to draw the shape on the canvas, getting the colours etc, and add the link if applicable.
-                     * @param {number} id of activity associated with hex
+                     * @param {number} element associated with hex
                      * @param {number} copy version of hex
                      * @param {object} outerholder the jquery selection of outerhex
                     */
-                    function drawhex(id, copy, outerholder) {
-                        var buttonstate;
+                    function drawhex(element, copy, outerholder) {
+                        let buttonstate = "down";
                         let can = outerholder.find("canvas");
                         let canvas = can.get(0);
                         let mid = can.next();
                         let text = mid.find("p");
                         var ctx = canvas.getContext('2d');
                         let essentialclass = canvas.classList[1];
-                        var activity = flow.flowdata[id];
+                        var activity = flow.flowdata[element];
                         let full = toHSL(activity.colouravail);
                         switch (essentialclass) {
                             case "cf-available":
@@ -294,19 +293,16 @@ define(['jquery'],
                             case "cf-hidden":
                                 full.sat = 10;
                                 full.light = 98;
-                                buttonstate = "down";
                                 break;
                             case "cf-notavailable":
                                 full.light += (100 - full.light) * 0.3;
                                 full.light = Math.max(full.light, 90);
                                 full.sat = Math.min(20, full.sat * 0.8);
-                                buttonstate = "down";
                                 break;
                             case "cf-next":
                                 buttonstate = "up";
                                 break;
                             default:
-                                buttonstate = "down";
                                 full.light = 100;
                         }
                         hexit(buttonstate, full, copy, 0);
@@ -318,7 +314,7 @@ define(['jquery'],
                         if ((flow.role == 0) || (buttonstate != "down")) {
                             mid.on("mousedown touchstart", function(e) {
                                     e.preventDefault();
-                                    flow.hexclicked = id;
+                                    flow.hexclicked = element;
                                     hexit("down", full, copy, 0);
                                     e.currentTarget.addEventListener("mouseleave", function() {
                                         flow.hexclicked = 0;
@@ -330,7 +326,7 @@ define(['jquery'],
                                     }, {once: true});
                                 })
                                 .on("click touchend mouseup", function() {
-                                    if (flow.hexclicked != id) {
+                                    if (flow.hexclicked != element) {
                                         flow.hexclicked = 0;
                                         return;
                                     }
@@ -421,8 +417,8 @@ define(['jquery'],
                                     return;
                                 }
                                 var parentplaced;
-                                if (activity.parentid == activity.baseparent.id) {
-                                    parentplaced = flow.flowdata[activity.baseparent.id].placed[activity.baseparent.version];
+                                if (activity.parentid == activity.baseparent.identity) {
+                                    parentplaced = flow.flowdata[activity.baseparent.identity].placed[activity.baseparent.version];
                                 } else {
                                     parentplaced = flow.flowdata[activity.parentid].placed[0];
                                 }

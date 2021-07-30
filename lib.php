@@ -188,9 +188,9 @@ function courseflow_cm_info_view($info) {
     }
     $flowform = [];
     foreach ($flowsteps as $anotherstep) {
-        $flowform[$anotherstep->id] = (object)['id' => $anotherstep->id
+        $flowform[$anotherstep->preferred] = (object)['modid' => $anotherstep->id
             , 'preferred' => $anotherstep->preferred
-            , 'parentid' => $anotherstep->parentid
+            , 'parentid' => $anotherstep->parentid == 0 ? 0 : $flowsteps[$anotherstep->parentid]->preferred
             , 'colouravail' => $anotherstep->colouravail
             ];
     }
