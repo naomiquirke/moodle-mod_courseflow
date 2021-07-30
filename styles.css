@@ -105,7 +105,7 @@
 }
 
 @media (max-width: 576px) {
-    .path-mod-courseflow p[id^=cf-hex-txt-].cf-hex-txt {
+    .path-mod-courseflow p.cf-hex-txt {
         line-height: 1rem;
     }
 }

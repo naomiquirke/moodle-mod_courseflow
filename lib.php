@@ -192,7 +192,7 @@ function courseflow_cm_info_view($info) {
             , 'preferred' => $anotherstep->preferred
             , 'parentid' => $anotherstep->parentid
             , 'colouravail' => $anotherstep->colouravail
-            , 'deleted' => $anotherstep->deleted];
+            ];
     }
     $outerflow->flowdata = $flowform; // Send through a cut down version to javascript.
     $outerflow->json = json_encode($outerflow);

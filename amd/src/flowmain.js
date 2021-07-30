@@ -78,11 +78,9 @@ define(['jquery'],
                                     .attr("id", `cf-outer-hex-${flow.mod}-${shape}-${index}`)
                                     .addClass("cf-clone");
                                 newholder.children(".cf-inner-hex").attr("id", `cf-inner-hex-${flow.mod}-${shape}-${index}`);
-                                newholder.children(".cf-hex-mid").attr("id", `cf-hex-mid-${flow.mod}-${shape}-${index}`);
-                                newholder.find(".cf-hex-txt").attr("id", `cf-hex-txt-${flow.mod}-${shape}-${index}`);
                                 newholder.appendTo($(`${flow.container}`));
                             }
-                            drawhex(shape, index);
+                            drawhex(shape, index, newholder);
                             newholder.css("position", "absolute");
                             newholder.animate({
                                 "left": (hexplacement.x * flow.size.stackright) + "px",
@@ -214,16 +212,15 @@ define(['jquery'],
                     */
                     function setSizes() {
                         let shapeholder = $(flow.container);
-                        let width = $(`li#module-${flow.mod}`).css("width");
-                        shapeholder.css("width", width); // Set this in case the theme has cut it down due to being empty initially.
+                        let width = shapeholder.parents(`#module-${flow.mod}`).css("width");
                         let hexdata = {};
                         let font = "inherit";
                         width = parseInt(width, 10) - 10;
-                        if (width < 300) {
+                        if (width < 577) {
                             shapeholder.parent().css("margin-left", 0);
                             hexdata.maxcol = 4;
                             font = "smaller";
-                        } else if (width < 500) {
+                        } else if (width < 641) {
                             shapeholder.parent().css("margin-left", 0);
                             hexdata.maxcol = 5;
                             font = "smaller";
@@ -276,12 +273,14 @@ define(['jquery'],
                     /** Set up to draw the shape on the canvas, getting the colours etc, and add the link if applicable.
                      * @param {number} id of activity associated with hex
                      * @param {number} copy version of hex
+                     * @param {object} outerholder the jquery selection of outerhex
                     */
-                    function drawhex(id, copy) {
+                    function drawhex(id, copy, outerholder) {
                         var buttonstate;
-                        let canvas = document.getElementById(`cf-inner-hex-${flow.mod}-${id}-${copy}`);
-                        let mid = $(`#cf-hex-mid-${flow.mod}-${id}-${copy}`);
-                        let text = $(`p#cf-hex-txt-${flow.mod}-${id}-${copy}`);
+                        let can = outerholder.find("canvas");
+                        let canvas = can.get(0);
+                        let mid = can.next();
+                        let text = mid.find("p");
                         var ctx = canvas.getContext('2d');
                         let essentialclass = canvas.classList[1];
                         var activity = flow.flowdata[id];
@@ -316,10 +315,8 @@ define(['jquery'],
                         let whitemaybe = (full.light < 65) ? "white" : "black";
                         let textcolour = copy ? "black" : whitemaybe;
                         text.css("color", textcolour);
-                        if (((flow.role == 0) || (buttonstate != "down")) && (!activity.deleted)) {
-                            // Second option alternative: ((activity.completion >= 0) && (parentcompletion == 1))) {
-                            mid.css("cursor", "pointer")
-                                .on("mousedown touchstart", function(e) {
+                        if ((flow.role == 0) || (buttonstate != "down")) {
+                            mid.on("mousedown touchstart", function(e) {
                                     e.preventDefault();
                                     flow.hexclicked = id;
                                     hexit("down", full, copy, 0);
@@ -338,7 +335,6 @@ define(['jquery'],
                                         return;
                                     }
                                     hexit(buttonstate, full, copy, 0);
-                                    location.href = activity.link;
                                 });
                         }
 
