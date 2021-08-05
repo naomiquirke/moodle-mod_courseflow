@@ -29,23 +29,21 @@
     Example context (json):
 
 }}
-<div class="cf-teachermessage" id="cf-teachermessage-{{mod}}"></div>
+<div class="cf-teachermessage" id="cf-teachermessage-{{mod}}">Teacher message to do</div>
 <div class="path-mod-courseflow cf-container" id="cf-container-{{mod}}">
 {{#flowdata}}
     <div id="cf-outer-hex-{{mod}}-{{id}}-0" class="cf-outer-hex {{cfclass}}">
         {{#link}}<a class="cf-link" href="{{link}}">{{/link}}
             <canvas class="cf-inner-hex {{cfclass}}"></canvas>
-            <div class="cf-hex-mid {{cfclass}}">
-                <div class="cf-txtholder">
-                    <p class="cf-hex-txt {{cfclass}}">{{name}}</p>
-                </div>
+            <div class="cf-txtholder {{cfclass}}">
+                <p class="cf-hex-txt {{cfclass}}">{{name}}</p>
             </div>
         {{#link}}</a>{{/link}}
     </div>
 {{/flowdata}}
 </div>
 {{#js}}
-    require(['jquery','mod_courseflow/flowmain'], function($, fm) {
+    require(['mod_courseflow/flowmain'], function(fm) {
         fm.init({{{json}}});
     });
 {{/js}}

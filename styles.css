@@ -73,32 +73,48 @@
     border-style: none;
 }
 
+div.cf-container {
+    width:100%; display: grid; align-items:center; justify-items:end; grid-template-rows: repeat(10, 70px); grid-template-columns: repeat(10, 70px);
+}
+div.cf-outer-hex.cf-next.cf-suggested {
+  background-image: radial-gradient(circle, rgba(255,255,0,0.6) 25%, rgba(255,255,0,0) 75%);
+}
+div.cf-outer-hex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+a.cf-link {
+    align-items: center;
+    justify-content: center;
+}
+
+/*
 .path-mod-courseflow.cf-container {
     width: 100%;
     display: inline-flex;
 }
-
-.path-mod-courseflow div.cf-outer-hex.cf-next.cf-suggested {
-  background-image: radial-gradient(circle, rgba(255,255,0,0.6) 25%, rgba(255,255,0,0) 75%);
-}
-
-.path-mod-courseflow div[class^=cf-hex-mid] {
-    overflow: hidden;
-    padding: 5px;
-}
-
-.path-mod-courseflow div.cf-txtholder {
+.path-mod-courseflow div.cf-outer-hex {
     display: flex;
     align-items: center;
-    height: 100%;
+    justify-content: center;
 }
-
 .path-mod-courseflow [class^=cf-hex-].cf-notavailable,
 .path-mod-courseflow [class^=cf-hex-].cf-hidden,
 .path-mod-courseflow [class^=cf-hex-].cf-deleted {
     cursor: default;
 }
-
+.path-mod-courseflow div[class^=cf-hex-mid] {
+    overflow: hidden;
+    padding: 5px;
+}
+.path-mod-courseflow div.cf-txtholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 75%;
+    width: 75%;
+}
 .path-mod-courseflow p.cf-hex-txt {
     margin: auto !important;
     text-align: center !important;
@@ -109,3 +125,4 @@
         line-height: 1rem;
     }
 }
+*/
