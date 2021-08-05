@@ -141,6 +141,7 @@ function courseflow_cm_info_view($info) {
             $step->name = $step->name . " (deleted)";
             $step->completion = -2;
             $step->cfclass = "cf-deleted";
+            $step->basehex = '../mod/courseflow/pix/basehex_deleted.svg';
             continue;
         }
 

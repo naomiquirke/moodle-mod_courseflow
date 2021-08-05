@@ -47,9 +47,9 @@ export const init = (coursestream) => {
         flow.size = setSizes();
         placelist();
         // Set the size of the containing element based on the number of hex rows that have been used.
-        let grdtemp = 'repeat(' + flow.maxrow * 2 + ', ' + flow.size.stackright / 2 + 'px)';
+        let grdtemp = 'repeat(' + flow.maxrow + ', ' + flow.size.stackright + 'px)';
         flow.containernode.style.gridTemplateRows = grdtemp;
-        grdtemp = 'repeat(' + flow.size.maxcol * 2 + ', ' + flow.size.stackright / 2 + 'px)';
+        grdtemp = 'repeat(' + flow.size.maxcol + ', ' + flow.size.stackright + 'px)';
         flow.containernode.style.gridTemplateColumns = grdtemp;
 
         // Initialise marker for next suggested shape, only one up button can have this.
@@ -67,12 +67,17 @@ export const init = (coursestream) => {
                     newholder = document.getElementById(`cf-outer-hex-${flow.mod}-${shape}-0`).cloneNode(true);
                     newholder.id = `cf-outer-hex-${flow.mod}-${shape}-${index}`;
                     newholder.classList.add("cf-clone");
-                    newholder.querySelector(".cf-inner-hex").id = `cf-inner-hex-${flow.mod}-${shape}-${index}`;
                     flow.containernode.append(newholder);
                 }
-                newholder.style.gridArea = (hexplacement.y + 1) + ' / ' + (hexplacement.x + 1) + ' / ' + (hexplacement.y + 3)
-                    + ' / ' + (hexplacement.x + 3);
-                drawhex(c, index, newholder);
+                hexplacement.x = (hexplacement.x) * 3 + 1;
+                hexplacement.y = (hexplacement.y) * 2 + 1;
+                newholder.style.gridArea = (hexplacement.y) + ' / ' + (hexplacement.x) + ' / ' + (hexplacement.y + 1)
+                    + ' / ' + (hexplacement.x + 2);
+//                Newholder.style.gridArea = (hexplacement.y + 1) + ' / ' + (hexplacement.x + 1) + ' / ' + (hexplacement.y + 3)
+//                    + ' / ' + (hexplacement.x + 4);
+                let shapeholder = newholder.querySelector(".cf-hex-mid");
+                shapeholder.style.width = shapeholder.style.height = 2 * flow.size.stackright + "px";
+//                Drawhex(c, index, newholder);
             }
             // Get rid of unused foldbacks. Continue from prev. index.
             let oldouter = document.getElementById(`cf-outer-hex-${flow.mod}-${shape}-${index}`);

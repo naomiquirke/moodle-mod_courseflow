@@ -371,3 +371,4 @@ define(['jquery', 'core/str'],
         };
     }
 );
+
