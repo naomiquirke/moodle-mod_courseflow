@@ -47,9 +47,11 @@ export const init = (coursestream) => {
         flow.size = setSizes();
         placelist();
         // Set the size of the containing element based on the number of hex rows that have been used.
-        let grdtemp = 'repeat(' + flow.maxrow + ', ' + flow.size.stackright + 'px)';
+        let grdtemp = 'repeat(' + flow.maxrow + ', ' // + flow.size.heightmargin + 'px '
+            + flow.size.halfshapeheight + 'px ' + flow.size.heightmargin + 'px)';
         flow.containernode.style.gridTemplateRows = grdtemp;
-        grdtemp = 'repeat(' + flow.size.maxcol + ', ' + flow.size.stackright + 'px)';
+        grdtemp = 'repeat(' + flow.size.maxcol + ', '
+            + flow.size.shapemargin + 'px ' + flow.size.shapebody + 'px) ' + flow.size.shapemargin + 'px';
         flow.containernode.style.gridTemplateColumns = grdtemp;
 
         // Initialise marker for next suggested shape, only one up button can have this.
@@ -69,14 +71,10 @@ export const init = (coursestream) => {
                     newholder.classList.add("cf-clone");
                     flow.containernode.append(newholder);
                 }
-                hexplacement.x = (hexplacement.x) * 3 + 1;
+                hexplacement.x = (hexplacement.x) * 2 + 1;
                 hexplacement.y = (hexplacement.y) * 2 + 1;
-                newholder.style.gridArea = (hexplacement.y) + ' / ' + (hexplacement.x) + ' / ' + (hexplacement.y + 1)
-                    + ' / ' + (hexplacement.x + 2);
-//                Newholder.style.gridArea = (hexplacement.y + 1) + ' / ' + (hexplacement.x + 1) + ' / ' + (hexplacement.y + 3)
-//                    + ' / ' + (hexplacement.x + 4);
-                let shapeholder = newholder.querySelector(".cf-hex-mid");
-                shapeholder.style.width = shapeholder.style.height = 2 * flow.size.stackright + "px";
+                newholder.style.gridArea = (hexplacement.y) + ' / ' + (hexplacement.x)
+                    + ' / ' + (hexplacement.y + 3) + ' / ' + (hexplacement.x + 3);
 //                Drawhex(c, index, newholder);
             }
             // Get rid of unused foldbacks. Continue from prev. index.
@@ -223,26 +221,33 @@ export const init = (coursestream) => {
                 if (width > 1200) {
                     width = 1200; // Overwhelming after this width.
                 }
-            }
-            hexdata.stackright = (width - 1) / (hexdata.maxcol * 1.1); // Size of grid cell.
-
-            hexdata.shapemargin = (hexdata.stackright) * 0.1; // Space between shapes.
-            hexdata.innersize = hexdata.stackright * 2;
-            let shapewidth = hexdata.innersize - (2 * hexdata.shapemargin); // Height & width of shape.
-            hexdata.basebtn = shapewidth * 0.1; // Height of button.
-            let shapeheight = shapewidth * 0.9;
-            hexdata.y1 = shapeheight / 2 + hexdata.shapemargin; // Placement of shape middle y.
-            hexdata.y2 = shapeheight + hexdata.shapemargin;
-            hexdata.grad = 7 / 4;
-            hexdata.x2 = 1 + hexdata.shapemargin + shapewidth / 2;
-            hexdata.x1 = 1 + hexdata.shapemargin + shapewidth * 2 / 7;
-            hexdata.x0 = 1 + hexdata.shapemargin;
-            hexdata.x3 = 1 + hexdata.shapemargin + shapewidth * 5 / 7;
+            } // Issue with following in that we don't take into account the very last shapemargin.
+            hexdata.stackright = width / hexdata.maxcol; // Size of small & large grid cells together.
+            hexdata.shapemargin = (hexdata.stackright) * 0.25; // Size of small grid cell.
+            hexdata.shapebody = hexdata.stackright - hexdata.shapemargin; // Size of large grid cell width.
+            let halfshapeheight = hexdata.shapebody * 0.87; // Size of large grid cell height.
+            hexdata.heightmargin = halfshapeheight * 0.1; // Size of large grid cell margin.
+            hexdata.halfshapeheight = halfshapeheight - hexdata.heightmargin; // Corrected height taking into account margin.
 
             return hexdata;
         }
+        /** Set up sizes to draw the shape on the canvas.
+        */
+        function drawhexouter() {
+            flow.size.innersize = flow.size.stackright * 7 / 5 + flow.size.shapemargin;
+            flow.size.basebtn = flow.size.innersize * 0.1; // Height of button.
+            let shapeheight = flow.size.innersize;
+            // Let hexdata.y0 = 0;
+            flow.size.y1 = (shapeheight - flow.size.basebtn) / 2; // Placement of shape middle y.
+            flow.size.y2 = shapeheight - flow.size.basebtn;
+            flow.size.grad = 7 / 4;
+            flow.size.x2 = 1 + flow.size.innersize / 2;
+            flow.size.x1 = 1 + flow.size.innersize * 2 / 7;
+            flow.size.x0 = 1;
+            flow.size.x3 = 1 + flow.size.innersize * 5 / 7;
+        }
 
-        /** Set up to draw the shape on the canvas, getting the colours etc, and add the link if applicable.
+        /** Set up to draw the shape on the canvas, getting the colours etc.
          * @param {number} preferred the hex id
          * @param {number} copy version of hex
          * @param {element} outerholder the outerhex element

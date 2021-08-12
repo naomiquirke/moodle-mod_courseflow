@@ -33,13 +33,11 @@
 <div class="path-mod-courseflow cf-container" id="cf-container-{{mod}}">
 {{#flowdata}}
     <div id="cf-outer-hex-{{mod}}-{{id}}-0" class="cf-outer-hex {{cfclass}}">
-        <div class="cf-hex-mid {{cfclass}}">
-            {{#link}}<a class="cf-link" href="{{link}}">{{/link}}
-                <div class="cf-txtholder {{cfclass}}">
-                    <p class="cf-hex-txt {{cfclass}}">{{name}}</p>
-                </div>
-            {{#link}}</a>{{/link}}
-        </div>
+        {{#link}}<a class="cf-link" href="{{link}}">{{/link}}
+            <div class="cf-txtholder {{cfclass}}">
+                <p class="cf-hex-txt {{cfclass}}">{{name}}</p>
+            </div>
+        {{#link}}</a>{{/link}}
     </div>
 {{/flowdata}}
 </div>
