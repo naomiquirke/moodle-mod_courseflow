@@ -178,7 +178,7 @@ function courseflow_cm_info_view($info) {
                     $flowsteps[$child->id]->link = 0;
                 } else {
                     if ($suggested) {
-                        $flowsteps[$child->id]->cfclass = "cf-next cf-suggested";
+                        $flowsteps[$child->id]->cfclass = "cf-suggested";
                         $suggested = 0;
                     } else {
                         $flowsteps[$child->id]->cfclass = "cf-next";
