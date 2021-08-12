@@ -77,45 +77,44 @@
     width:100%;
     display: grid; align-items:stretch; justify-items:stretch; grid-template-rows: repeat(5, 100px); grid-template-columns: repeat(5, 100px);
 }
-.path-mod-courseflow div.cf-outer-hex {
+.path-mod-courseflow div.cf-outer-hex,
+.path-mod-courseflow div.cf-outer-hex:active {
     background-position:center;
     background-size: contain;
     background-repeat: no-repeat;
     background-clip: border-box;
 }
-.path-mod-courseflow div.cf-outer-hex.cf-next.cf-suggested {
-  background-image: radial-gradient(circle, rgba(255,255,0,0.6) 25%, rgba(255,255,0,0) 75%);
-}
-.path-mod-courseflow div.cf-hex-mid {
-    background-position:center;
-    background-size: contain;
-    background-repeat: no-repeat;
-    width: 100px; /* Initial */
-    height: 100px; /* Initial */
-}
-.path-mod-courseflow div.cf-hex-mid.cf-notavailable {
-    background-image: url([[pix:mod_courseflow|basehex_down]]);
+.path-mod-courseflow div.cf-outer-hex.cf-notavailable {
+    background-image: url([[pix:mod_courseflow|basehex_down2]]);
     color: white;
 }
-.path-mod-courseflow div.cf-hex-mid.cf-hidden {
-    background-image: url([[pix:mod_courseflow|basehex_hidden]]);
+.path-mod-courseflow div.cf-outer-hex.cf-hidden {
+    background-image: url([[pix:mod_courseflow|basehex_hidden2]]);
     color:black;
 }
-.path-mod-courseflow div.cf-hex-mid.cf-available {
-    background-image: url([[pix:mod_courseflow|basehex_up_half]]);
+.path-mod-courseflow div.cf-outer-hex.cf-available {
+    background-image: url([[pix:mod_courseflow|basehex_up_half2]]);
     color: black;
 }
-.path-mod-courseflow div.cf-hex-mid.cf-hidden {
-    background-image: url([[pix:mod_courseflow|basehex_hidden]]);
-    color:black;
-}
-.path-mod-courseflow div.cf-hex-mid.cf-next {
-    background-image: url([[pix:mod_courseflow|basehex_up]]);
-    color: black;
-}
-.path-mod-courseflow div.cf-hex-mid.cf-deleted {
-    background-image: url([[pix:mod_courseflow|basehex_deleted]]);
+.path-mod-courseflow div.cf-outer-hex.cf-deleted {
+    background-image: url([[pix:mod_courseflow|basehex_deleted2]]);
     color: red;
+}
+.path-mod-courseflow div.cf-outer-hex.cf-next {
+    background-image: url([[pix:mod_courseflow|basehex_up2]]);
+    color: black;
+}
+.path-mod-courseflow div.cf-outer-hex.cf-suggested {
+    background-image: radial-gradient(circle, rgba(255,255,0,0.6) 25%, rgba(255,255,0,0) 75%), url([[pix:mod_courseflow|basehex_up2]]);
+    color: black;
+}
+.path-mod-courseflow div.cf-available:active,
+.path-mod-courseflow div.cf-next:active {
+    background-image: url([[pix:mod_courseflow|basehex_clickeddown]]);
+}
+.path-mod-courseflow div.cf-outer-hex.cf-suggested {
+    background-image: radial-gradient(circle, rgba(255,255,0,0.6) 25%, rgba(255,255,0,0) 75%), url([[pix:mod_courseflow|basehex_clickeddown]]);
+    color: black;
 }
 .path-mod-courseflow div.cf-txtholder {
     display: flex;
@@ -132,6 +131,9 @@
 .path-mod-courseflow p.cf-hex-txt {
     margin: auto !important;
     text-align: center !important;
+    color:inherit;
+}
+.path-mod-courseflow a {
     color:inherit;
 }
 

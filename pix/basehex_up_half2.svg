@@ -1,0 +1,26 @@
+<svg width="2pc" height="2pc" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient859">
+   <stop style="stop-color:#194b00" offset="0"/>
+   <stop style="stop-color:#1a4b00;stop-opacity:.5" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient861" x1=".4" x2="8" y1="15" y2="30" gradientTransform="translate(-.3 -1)" gradientUnits="userSpaceOnUse" xlink:href="#linearGradient859"/>
+  <linearGradient id="linearGradient877" x1="16" x2="16" y1="28" y2="31" gradientTransform="matrix(1 0 0 .3 -.4 22)" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#194b00" offset="0"/>
+   <stop style="stop-color:#1b4a00;stop-opacity:.5" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient885" x1="17" x2="17" y1=".3" y2="28" gradientTransform="translate(-.3 2)" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#176d13" offset="0"/>
+   <stop style="stop-color:#1a7e00;stop-opacity:.4" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient892" x1=".4" x2="8" y1="15" y2="30" gradientTransform="matrix(-1 0 0 1 32 -1)" gradientUnits="userSpaceOnUse" xlink:href="#linearGradient859"/>
+ </defs>
+ <path d="m24 31-16-2e-6 -8-15 8-15 16 9e-7 8 15z" style="fill-rule:evenodd;fill:#fff;stroke-width:.06;stroke:#000"/>
+ <path d="m0.06 16 8 15-0.06 0.9-8-15z" style="fill:#fff"/>
+ <path d="m24 31h-16v0.9h16z" style="fill:#fff;stroke-linejoin:bevel;stroke-width:.08;stroke:#000"/>
+ <path d="m32 16-8 15 0.06 0.9 8-15z" style="fill:#fff"/>
+ <path d="m24 31-16-2e-6 -8-15 8-15 16 9e-7 8 15z" style="fill-rule:evenodd;fill:url(#linearGradient885);stroke-width:.06;stroke:#000"/>
+ <path d="m-3e-7 16 8 15-0.06 0.9-8-15z" style="fill:url(#linearGradient861);stroke-linejoin:bevel;stroke-width:.1;stroke:#000"/>
+ <path d="m24 31h-16v0.9h16z" style="fill:url(#linearGradient877);stroke-linejoin:bevel;stroke-width:.08;stroke:#000"/>
+ <path d="m32 16-8 15 0.06 0.9 8-15z" style="fill:url(#linearGradient892);stroke-linejoin:bevel;stroke-width:.1;stroke:#000"/>
+</svg>

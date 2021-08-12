@@ -1,0 +1,17 @@
+<svg width="2pc" height="2pc" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient861" x1="-4" x2="10" y1="9" y2="35" gradientTransform="translate(-.3 -1)" gradientUnits="userSpaceOnUse" xlink:href="#linearGradient885"/>
+  <linearGradient id="linearGradient885" x1="17" x2="17" y1=".3" y2="28" gradientTransform="translate(-.3 2)" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#176d13" offset="0"/>
+   <stop style="stop-color:#e4fddd" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient884" x1="17" x2="17" y1=".3" y2="29" gradientTransform="translate(-.3 2)" gradientUnits="userSpaceOnUse" xlink:href="#linearGradient885"/>
+  <linearGradient id="linearGradient888" x1="-4" x2="10" y1="9" y2="35" gradientTransform="matrix(-1 0 0 1 32 -1)" gradientUnits="userSpaceOnUse" xlink:href="#linearGradient885"/>
+ </defs>
+ <path class="cf-half-top" d="m24 31-16-2e-6 -8-15 8-15 16 9e-7 8 15z" style="fill-rule:evenodd;fill:url(#linearGradient884);stroke-width:.06;stroke:#000"/>
+ <g class="cf-half-base">
+ <path d="m-3e-7 16 8 15-0.06 0.9-8-15z" style="fill:url(#linearGradient861);stroke-linejoin:bevel;stroke-width:.1;stroke:#000"/>
+ <path d="m24 31h-16v0.9h16z" style="fill:#e4fddd;stroke-linejoin:bevel;stroke-width:.08;stroke:#000"/>
+ <path d="m32 16-8 15 0.06 0.9 8-15z" style="fill:url(#linearGradient888);stroke-linejoin:bevel;stroke-width:.1;stroke:#000"/>
+ </g>
+</svg>

@@ -1,0 +1,37 @@
+<svg width="2pc" height="2pc" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:osb="http://www.openswatchbook.org/uri/2009/osb" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient861" x1=".39268" x2="8.047" y1="14.617" y2="30.125" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#194b00" offset="0"/>
+   <stop style="stop-color:#1a4b00;stop-opacity:.5451" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient869" x1="31.946" x2="24.043" y1="14.076" y2="30.622" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#194b00" offset="0"/>
+   <stop style="stop-color:#1a4b00;stop-opacity:.50588" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient877" x1="16.285" x2="16.372" y1="27.905" y2="30.713" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#194b00" offset="0"/>
+   <stop style="stop-color:#1b4a00;stop-opacity:.52549" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient885" x1="17.062" x2="16.6" y1=".25295" y2="27.597" gradientUnits="userSpaceOnUse">
+   <stop style="stop-color:#199800" offset="0"/>
+   <stop style="stop-color:#1a7e00;stop-opacity:.38039" offset="1"/>
+  </linearGradient>
+ </defs>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g transform="matrix(1.0083 0 0 1.0547 -.00040162 -1.63)">
+  <g transform="translate(-.28485 1.2398)">
+   <path d="m24.043 27.86-15.807-2e-6 -7.9033-13.784 7.9033-13.784 15.807 7.8e-7 7.9033 13.784z" style="fill-rule:evenodd;fill:url(#linearGradient885);stroke-width:.054954;stroke:#000"/>
+   <path d="m0.333 14.076 7.9033 13.784v2.7623l-7.9033-13.784z" style="fill:url(#linearGradient861);stroke-linejoin:bevel;stroke-width:.13982;stroke:#000"/>
+   <path d="m31.946 14.076-7.9033 13.784v2.7623l7.9033-13.784z" style="fill:url(#linearGradient869);stroke-linejoin:bevel;stroke-width:.13982;stroke:#000"/>
+   <path d="m24.043 27.86h-15.807v2.7623l15.807 1e-6z" style="fill:url(#linearGradient877);stroke-linejoin:bevel;stroke-width:.13982;stroke:#000"/>
+  </g>
+ </g>
+</svg>
