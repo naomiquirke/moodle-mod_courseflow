@@ -14,17 +14,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /*
- * Provides interface for users to use courseflow activity flow on the course page.
+ * Provides interface for users to use courseflow activity flow on the coursepage.
  *
  * @package    mod_courseflow
- * @copyright  2020 Naomi Quirke
+ * @copyright  2022 Naomi Quirke
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 /**
  * @module mod_courseflow/flowmain
  */
-// import * as Str from 'core/str';
-export const init = (coursestream) => {
+alert(this.CONTENT_OTHERDATA);
+this.CoreDomUtilsProvider.showToast(this.CONTENT_OTHERDATA, true, 6000);
+
+var coursestream = JSON.parse(this.CONTENT_OTHERDATA);
     coursestream.containernode = document.getElementById(`cf-container-${coursestream.mod}`);
     coursestream.containernode.onmousedown = function(e) {
         e.preventDefault();
@@ -485,5 +487,4 @@ export const init = (coursestream) => {
                 return {"hue": h, "sat": s, "light": l};
             }
         }
-    }
 };

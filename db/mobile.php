@@ -34,12 +34,12 @@ $addons = [
                     or the Javascript of the handler’s method. */
                 // Possibly need to use this, but maybe can just use the mobile_courseflow_view js. 'init' => 'mobile_courseflow',
                 'styles' => [ // Can contain url and version.
-                    'url' => '/mod/cado/mobile/mobilestyles.css',
+//                    'url' => '/mod/courseflow/mobile/mobilestyles.css',
                     'version' => 1,
                 ],
                 'displaydata' => array(
                     'title' => 'pluginname',
-                    'icon' => '', // Currently no icon, as display coursepage $CFG->wwwroot . '/mod/courseflow/pix/icon.svg', .
+                    'icon' => $CFG->wwwroot . '/mod/courseflow/pix/icon.svg',
                     'class' => 'path-mod-courseflow',
                 ),
                 // Main function in \mod_courseflow\classes\output\mobile: 'method' => '', If not set, then won't be clickable.

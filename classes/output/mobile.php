@@ -127,11 +127,8 @@ class mobile {
                 , 'deleted' => $anotherstep->deleted];
         }
         $outerflow->flowdata = $flowform; // Send through a cut down version.
-        $outerflow->json = json_encode($outerflow);
+        $otherdata = json_encode($outerflow);
         $outerflow->flowdata = array_values((array) $flowsteps); // Moustache can't cope with sparse arrays.
-        $renderer = $PAGE->get_renderer('mod_courseflow');
-
-        $rendered = $renderer->render_courseflow($outerflow);
 
         $info->set_content($rendered, true); // Must have $isformatted=true.
 
@@ -142,11 +139,11 @@ class mobile {
             'templates' => array(
                 array(
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template('mod_courseflow/courseflow', $args),
+                    'html' => $OUTPUT->render_from_template('mod_courseflow/mobile_courseflow', $outerflow),
                 ),
             ),
-            'javascript' => 'mod_courseflow/flowmain',
-            'otherdata' => $outerflow->json,
+            'javascript' => file_get_contents($CFG->dirroot . "/mod/courseflow/mobile/flowmain.js"),
+            'otherdata' => $otherdata,
             'files' => ''
         );
     }
